@@ -75,7 +75,7 @@ Then we create a onSubmit form handler that will call our validators.
 const handleSubmit = (event) => {
   event.preventDefault();
 
-  if (!form.isValid()) {
+  if (!form.validate()) {
     // form is invalid, exit early
     // when this happens, our hook will update the fields that failed validation
     return;
@@ -107,3 +107,72 @@ As you may notice, for every given property in your schema, our hook will create
   <button type="submit">Submit</button>
 </form>
 ```
+
+## Forms with nested objects
+
+Say that you have a nested object that you would want to send to your API
+
+```js
+const object = { foo: { bar: { baz: 'hi' } } };
+```
+
+```js
+const form: any = useForm(
+  {
+    foo: { bar: { baz: '' } },
+  },
+  {
+    type: 'object',
+    properties: {
+      foo: {
+        type: 'object',
+        properties: {
+          bar: {
+            type: 'object',
+            required: ['baz'],
+            properties: {
+              baz: {
+                type: 'string',
+                minLength: 5,
+                errorMessage: {
+                  minLength: 'Too short',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+);
+```
+
+Normally, with most libraries out there, you would always get a flat object back, then you would have to "normalize" it before it's sent somewhere.
+
+With this library, that's a lot easier.
+
+Let's imagine that we have our own custom input
+
+```jsx
+const CustomInput = ({ form, name }) => {
+  return (
+    <>
+      <input
+        type="text"
+        name={name}
+        value={form.state[name].value}
+        onChange={(e) => form.setState({ [e.target.name]: e.target.value })}
+      />
+      {form.state[name].error && <p>{form.state[name].error}</p>}
+    </>
+  );
+};
+```
+
+```jsx
+<CustomInput form={form} name="foo.bar.baz" />
+```
+
+Simply pass the object path as the `name` prop and this library will generate the object for you. But not only that, validate it against the provided schema.
+
+The fact that we `unflatten` the state makes it incredibly easy to make your form generate the exact object shape that you want, instead of needing to do it manually yourself.
