@@ -53,7 +53,7 @@ const schema = {
   },
 };
 
-const form = useAjvForm(initialState, schema);
+const form = useAjvForm(initialState, schema, remoteErrors);
 ```
 
 Then we create a onSubmit form handler that will call our validators.
