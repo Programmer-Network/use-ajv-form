@@ -16,10 +16,10 @@ This library is used by all forms on [Programmer Network](https://programmer.net
 
 ## Features
 
-- Form JSON Schema Validation
-- Dirty state checking
-- Consume remote errors as part of the schema, e.g. `username already taken`. In simple words, errors coming from your API
-- Maps 1:1 with nested objects. In simple words, a form can generate the exact object shape that you want, no need for manual mapping before e.g. API submission
+- Form JSON Schema Validation ✔️
+- Dirty state checking ✔️
+- Consume remote errors as part of the schema, e.g. `username already taken`. In simple words, errors coming from your API ✔️
+- Maps 1:1 with nested objects. In simple words, a form can generate the exact object shape that you want, no need for manual mapping before e.g. API submission ✔️
 
 ---
 
@@ -117,7 +117,7 @@ const object = { foo: { bar: { baz: 'hi' } } };
 ```
 
 ```js
-const form: any = useForm(
+const form: any = useAjvForm(
   {
     foo: { bar: { baz: '' } },
   },
