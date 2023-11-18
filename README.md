@@ -174,5 +174,3 @@ const CustomInput = ({ form, name }) => {
 ```
 
 Simply pass the object path as the `name` prop and this library will generate the object for you. But not only that, validate it against the provided schema.
-
-The fact that we `unflatten` the state makes it incredibly easy to make your form generate the exact object shape that you want, instead of needing to do it manually yourself.

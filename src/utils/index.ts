@@ -1,70 +1,80 @@
-export const processAjvErrors = (ajvErrors) => {
+import { ErrorObject } from 'ajv';
+
+import { InitialState } from './types';
+
+import { DefaultAJVMessages } from './types';
+import { defaultAJVMessages } from './constants';
+
+// TODO: Is there a better way to do this?
+// This is error prone because not all keywords are covered.
+const getFieldName = (field: ErrorObject): string | null => {
+  switch (field.keyword) {
+    case 'required':
+      return field.params.missingProperty;
+    case 'errorMessage':
+    case 'minimum':
+    case 'maximum':
+    case 'type':
+    case 'minItems':
+    case 'maxItems':
+    case 'minLength':
+    case 'maxLength':
+    case 'format':
+      return field.instancePath.slice(1);
+    default:
+      return null;
+  }
+};
+
+const getErrorMessage = (error: ErrorObject): string => {
+  const UNKNOWN_VALIDATION_ERROR = 'Unknown validation error';
+
+  try {
+    const keyword = error.keyword as keyof DefaultAJVMessages;
+    const errorMessageFunction = defaultAJVMessages[keyword];
+
+    if (typeof errorMessageFunction === 'function') {
+      return errorMessageFunction(error.params);
+    }
+
+    return error.message || UNKNOWN_VALIDATION_ERROR;
+  } catch (_) {
+    return UNKNOWN_VALIDATION_ERROR;
+  }
+};
+
+export const getErrors = (ajvErrors: ErrorObject[]): { [key: string]: string } => {
   return ajvErrors.reduce((acc, current) => {
-    const fieldName = current.instancePath
-      ? current.instancePath.slice(1, current.instancePath.length)
-      : current.params?.missingProperty;
+    const fieldName: string | null = getFieldName(current);
+    if (!fieldName) {
+      return acc;
+    }
 
     return {
       ...acc,
-      [fieldName]: current.message,
+      [fieldName]: getErrorMessage(current),
     };
   }, {});
 };
 
-export const unflatten = (data, splitOperator) => {
-  var result = {};
-  for (var i in data) {
-    var keys = i.split(splitOperator);
-    keys.reduce(function (r, e, j) {
-      return (
-        r[e] ||
-        (r[e] = isNaN(Number(keys[j + 1]))
-          ? keys.length - 1 === j
-            ? data[i]
-            : {}
-          : [])
-      );
-    }, result);
-  }
-  return result;
-};
+export const getInitial = <T extends Record<string, any>>(
+  initialState: T,
+): InitialState<T> => {
+  const state: InitialState<T> = {} as InitialState<T>;
 
-export const getValue = (state, fieldName) => {
-  if (typeof state[fieldName] === 'boolean') {
-    return state[fieldName];
-  }
-
-  if (state[fieldName]) {
-    return state[fieldName];
-  }
-
-  return '';
-};
-
-export const flattenObj = (ob) => {
-  let result = {};
-  for (const i in ob) {
-    if (typeof ob[i] === 'object') {
-      const temp = flattenObj(ob[i]);
-      for (const j in temp) {
-        result[i + '.' + j] = temp[j];
-      }
-    } else {
-      result[i] = ob[i];
+  for (const key in initialState) {
+    if (Object.prototype.hasOwnProperty.call(initialState, key)) {
+      state[key] = { value: initialState[key], error: null };
     }
   }
-  return result;
+
+  return state;
 };
 
-export const getInitialState = (initialState: any) => {
-  const flattened = flattenObj(initialState);
+export const getValue = (value: unknown) => {
+  if (value === null || value === undefined) {
+    return '';
+  }
 
-  return Object.keys(flattened).reduce((acc, fieldName) => {
-    acc[fieldName] = {
-      value: getValue(flattened, fieldName),
-      error: null,
-    };
-
-    return acc;
-  }, {});
+  return value ?? '';
 };

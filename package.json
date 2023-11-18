@@ -37,23 +37,26 @@
   },
   "homepage": "https://github.com/agjs/use-ajv-form#readme",
   "peerDependencies": {
-    "react": ">= 16.8.0",
-    "react-dom": ">= 16.8.0"
+    "react": ">= 18.2.0",
+    "react-dom": ">= 18.2.0"
   },
   "dependencies": {
+    "@types/ajv": "^1.0.0",
+    "ajv": "^8.12.0",
+    "ajv-errors": "^3.0.0",
+    "ajv-formats": "^2.1.1",
+    "programmer-network-ajv": "github:Programmer-Network/Programmer-Network-AJV",
     "prop-types": "^15.7.2"
   },
   "devDependencies": {
     "@testing-library/react-hooks": "^3.4.1",
     "@types/jest": "^26.0.7",
-    "@types/react": "^16.3.13",
-    "@types/react-dom": "^16.0.5",
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
     "babel-core": "^6.26.3",
     "babel-runtime": "^6.26.0",
     "eslint-plugin-react-hooks": "^4.0.8",
     "jest": "^26.1.0",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0",
     "react-test-renderer": "^16.13.1",
     "rollup": "^1.29.0",
     "rollup-plugin-typescript2": "^0.25.3",
