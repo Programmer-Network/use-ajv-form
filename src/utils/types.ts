@@ -1,7 +1,7 @@
 export type AJVErrorParams = {
   limit?: number;
   missingProperty?: string;
-  allowedValues?: any[];
+  allowedValues?: string[];
   format?: string;
   type?: string;
 };
@@ -33,30 +33,31 @@ export type FormField<T> = {
 export type IState<T> = {
   [K in keyof T]: {
     value: T[K];
-    error: string | null;
+    error: string;
   };
 };
 
 export type InitialState<T> = {
   [K in keyof T]: {
     value: T[K];
-    error: null;
+    error: string;
   };
 };
 
 export type ValidateResult<T> = {
   isValid: boolean;
   data: T | null;
-  errors?: any;
+  errors?: Partial<{ [K in keyof T]: T[K] }>;
 };
 
-export interface useFormErrors {
-  [key: string]: any;
-}
-
+export type useFormErrors<T> = {
+  [K in keyof T]?: string;
+};
 export interface UseFormReturn<T> {
   state: IState<T>;
   set: (form: Partial<{ [K in keyof T]: T[K] }>) => void;
   reset: () => void;
   validate: () => ValidateResult<T>;
+  isDirty: boolean;
+  onBlur: (fieldName: string) => void;
 }

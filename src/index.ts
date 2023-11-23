@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { getInitial, getValue, getErrors } from './utils';
 import { ajv } from './utils/validation';
 
@@ -10,6 +10,7 @@ const useAJVForm = <T extends Record<string, any>>(
   schema: JSONSchemaType<T>,
   errors?: ErrorObject[],
 ): UseFormReturn<T> => {
+  const initialStateRef = useRef<IState<T>>(getInitial(initial));
   const [state, setState] = useState<IState<T>>(getInitial(initial));
   const AJVValidate = ajv.compile(schema);
 
@@ -20,11 +21,25 @@ const useAJVForm = <T extends Record<string, any>>(
           ...acc,
           [name]: {
             value: '',
-            error: null,
+            error: '',
           },
         };
       }, {} as IState<T>),
     );
+  };
+
+  const handleBlur = (fieldName: keyof T) => {
+    const isValid = AJVValidate({ [fieldName]: state[fieldName].value });
+    const errors = AJVValidate.errors || [];
+    const fieldErrors = isValid ? {} : getErrors(errors);
+
+    setState((prevState) => ({
+      ...prevState,
+      [fieldName]: {
+        ...prevState[fieldName],
+        error: fieldErrors[fieldName as string] || '',
+      },
+    }));
   };
 
   const setFormState = (form: Partial<FormField<T>>) => {
@@ -35,6 +50,7 @@ const useAJVForm = <T extends Record<string, any>>(
         return {
           ...acc,
           [fieldKey]: {
+            ...currentState[fieldKey],
             value: getValue(form[fieldKey]),
           },
         };
@@ -42,7 +58,7 @@ const useAJVForm = <T extends Record<string, any>>(
     }));
   };
 
-  const setErrors = (errors: useFormErrors) => {
+  const setErrors = (errors: useFormErrors<T>) => {
     return Object.keys(errors).reduce(
       (acc, fieldName) => {
         const key = fieldName as keyof typeof state;
@@ -51,7 +67,7 @@ const useAJVForm = <T extends Record<string, any>>(
           ...acc,
           [fieldName]: {
             value: getValue(state[key].value),
-            error: errors[fieldName] || null,
+            error: errors[fieldName] || '',
           },
         };
       },
@@ -69,7 +85,7 @@ const useAJVForm = <T extends Record<string, any>>(
       }, {} as T);
 
       if (!AJVValidate(data) && AJVValidate.errors) {
-        const errors: useFormErrors = getErrors(AJVValidate.errors);
+        const errors: useFormErrors<T> = getErrors(AJVValidate.errors);
 
         setState(
           setErrors(
@@ -90,6 +106,20 @@ const useAJVForm = <T extends Record<string, any>>(
     }
   };
 
+  const isFormDirty = (
+    currentState: IState<T>,
+    initialState: IState<T>,
+  ): boolean => {
+    return Object.keys(currentState).some(
+      (key) => currentState[key].value !== initialState[key].value,
+    );
+  };
+
+  const isDirty = useMemo(
+    () => isFormDirty(state, initialStateRef.current),
+    [state],
+  );
+
   useEffect(() => {
     if (!errors?.length) {
       return;
@@ -98,7 +128,14 @@ const useAJVForm = <T extends Record<string, any>>(
     setState(setErrors(getErrors(errors)));
   }, [errors]);
 
-  return { reset: resetForm, state, set: setFormState, validate: validateForm };
+  return {
+    reset: resetForm,
+    set: setFormState,
+    validate: validateForm,
+    onBlur: handleBlur,
+    isDirty,
+    state,
+  };
 };
 
 export default useAJVForm;

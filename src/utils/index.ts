@@ -1,13 +1,18 @@
 import { ErrorObject } from 'ajv';
 
-import { InitialState } from './types';
+import { InitialState, useFormErrors } from './types';
 
 import { DefaultAJVMessages } from './types';
 import { defaultAJVMessages } from './constants';
+import { customKeywordNames } from './validation';
 
 // TODO: Is there a better way to do this?
 // This is error prone because not all keywords are covered.
 const getFieldName = (field: ErrorObject): string | null => {
+  if (customKeywordNames.includes(field.keyword)) {
+    return field.instancePath.slice(1);
+  }
+
   switch (field.keyword) {
     case 'required':
       return field.params.missingProperty;
@@ -20,6 +25,7 @@ const getFieldName = (field: ErrorObject): string | null => {
     case 'minLength':
     case 'maxLength':
     case 'format':
+    case 'secure-string':
       return field.instancePath.slice(1);
     default:
       return null;
@@ -43,7 +49,9 @@ const getErrorMessage = (error: ErrorObject): string => {
   }
 };
 
-export const getErrors = (ajvErrors: ErrorObject[]): { [key: string]: string } => {
+export const getErrors = <T extends Record<string, any>>(
+  ajvErrors: ErrorObject[],
+): useFormErrors<T> => {
   return ajvErrors.reduce((acc, current) => {
     const fieldName: string | null = getFieldName(current);
     if (!fieldName) {
@@ -64,7 +72,7 @@ export const getInitial = <T extends Record<string, any>>(
 
   for (const key in initialState) {
     if (Object.prototype.hasOwnProperty.call(initialState, key)) {
-      state[key] = { value: initialState[key], error: null };
+      state[key] = { value: initialState[key], error: '' };
     }
   }
 
