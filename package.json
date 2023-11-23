@@ -69,6 +69,7 @@
     "eslint-plugin-prettier": "5.0.1",
     "eslint-plugin-react": "7.33.2",
     "eslint-plugin-react-hooks": "4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.4",
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "husky": "8.0.3",
     "jsdom": "22.1.0",
