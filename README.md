@@ -1,176 +1,33 @@
-# React AJV Schema
+# useAjvForm
 
-![Drag Racing](./assets/ajv-react.png)
+<p align="center" style="width:300px; margin: auto;">
+  <img src="./assets/ajv-react.png">
+</p>
 
-[use-ajv-form](https://github.com/agjs/use-ajv-form) is a custom React Hook that enables you to generate your form logic and validation based on [Ajv JSON Schema Validator](https://ajv.js.org/).
+[use-ajv-form](https://github.com/agjs/use-ajv-form) is a custom React Hook enabling powerful and efficient form logic and validation using [Ajv JSON Schema Validator](https://ajv.js.org/). It offers an elegant solution to integrate state and validation into any form, independent of the form's design and presentation.
 
-It integrates seamlessly with any form and is completely agnostic from your form markup. It simply provides the state and validation. You choose how you want to present the errors and organise your forms. In simple words, it's completely decoupled from how your forms work, look and feel.
+This library is a part of the toolkit used extensively on [Programmer Network](https://programmer.network/). It is an open-source project, fostered by our vibrant community on the [Programmer Network Twitch Channel](https://twitch.tv/programmer_network).
 
-## Why
+## Why Use React AJV Schema?
 
-Validating forms manually is a painful process. Ajv solves that by not only providing validation based on valid [JSON Schema Specification](https://json-schema.org/specification.html), but also, provides [plugins](https://ajv.js.org/packages/) that allows further extension and creation of custom validators. That means that you can extend your schema with infinite amount of validators, and keep your forms still purely depend on the schema, without introducing manual if statements all over the place.
-
-This library is used by all forms on [Programmer Network](https://programmer.network/) and is Open Sourced due to our amazing community on an official [Programmer Network Twitch Channel](https://twitch.tv/programmer_network).
-
----
+- **Streamlined Form Validation**: Uses Ajv to automate form validation against the [JSON Schema Specification](https://json-schema.org/specification.html), significantly reducing the need for manual validation.
+- **Plugin Extensibility**: Supports Ajv [plugins](https://ajv.js.org/packages/) for custom validators, enhancing schema flexibility.
+- **Design Agnostic**: Offers full freedom in how you structure, style, and handle your forms.
 
 ## Features
 
-- Form JSON Schema Validation ✔️
-- Dirty state checking ✔️
-- Consume remote errors as part of the schema, e.g. `username already taken`. In simple words, errors coming from your API ✔️
-- Maps 1:1 with nested objects. In simple words, a form can generate the exact object shape that you want, no need for manual mapping before e.g. API submission ✔️
+- **JSON Schema Validation**: Validates form data against a specified JSON schema.
+- **Dirty State Tracking**: Identifies changes in form fields.
+- **Remote Error Handling**: Manages errors from external sources (like APIs) as part of schema validation.
 
----
+## Installation
 
-## Install
-
-`yarn add @programmer_network/use-ajv-form`
-
-or
-
-`npm install @programmer_network/use-ajv-form`
-
----
-
-## Usage
-
-[Codesandbox Live Demo](https://google.com)
-
-Let's start with a simple example.
-
-Let's create our form object. This object contains methods and state that our form will depend on.
-
-```javascript
-import { useAjvForm } from '@programmer_network/useAjvForm';
-
-const initialState = {
-  title: '',
-  description: '',
-};
-
-const schema = {
-  type: 'object',
-  required: ['title'],
-  properties: {
-    title: {
-      type: 'string',
-    },
-    description: {
-      type: 'string',
-      minLength: 20,
-      errorMessages: {
-        minLength: 'Description is too short. At least 20 characters expected.',
-      },
-    },
-  },
-};
-
-const form = useAjvForm(initialState, schema, remoteErrors);
+```bash
+pnpm add @programmer_network/use-ajv-form
+# or
+bun install @programmer_network/use-ajv-form
+# or
+yarn add @programmer_network/use-ajv-form
+# or
+npm install @programmer_network/use-ajv-form
 ```
-
-Then we create a onSubmit form handler that will call our validators.
-
-```js
-const handleSubmit = (event) => {
-  event.preventDefault();
-
-  if (!form.validate()) {
-    // form is invalid, exit early
-    // when this happens, our hook will update the fields that failed validation
-    return;
-  }
-
-  // validation successful, call some API
-  axios.post('someUrl', form.data);
-};
-```
-
-Generally, your own Input component takes a value and an error. If you are using component composition, this might look a bit different, but you get the point.
-
-```jsx
-// your custom input component
-const CustomInput = ({ value, error, name }) => {
-  <input type="text" name={name} value={value} />;
-  {
-    error && <span>{error}</span>;
-  }
-};
-```
-
-As you may notice, for every given property in your schema, our hook will create a value and error properties. Error property is initially set to null, and the value to whatever values are set in your initial state.
-
-```jsx
-<form onSubmit={handleSubmit}>
-  <CustomInput name="title" value={form.state.title.value} />
-  <CustomInput name="description" value={form.state.description.value} />
-  <button type="submit">Submit</button>
-</form>
-```
-
-## Forms with nested objects
-
-Say that you have a nested object that you would want to send to your API
-
-```js
-const object = { foo: { bar: { baz: 'hi' } } };
-```
-
-```js
-const form: any = useAjvForm(
-  {
-    foo: { bar: { baz: '' } },
-  },
-  {
-    type: 'object',
-    properties: {
-      foo: {
-        type: 'object',
-        properties: {
-          bar: {
-            type: 'object',
-            required: ['baz'],
-            properties: {
-              baz: {
-                type: 'string',
-                minLength: 5,
-                errorMessage: {
-                  minLength: 'Too short',
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-);
-```
-
-Normally, with most libraries out there, you would always get a flat object back, then you would have to "normalize" it before it's sent somewhere.
-
-With this library, that's a lot easier.
-
-Let's imagine that we have our own custom input
-
-```jsx
-const CustomInput = ({ form, name }) => {
-  return (
-    <>
-      <input
-        type="text"
-        name={name}
-        value={form.state[name].value}
-        onChange={(e) => form.setState({ [e.target.name]: e.target.value })}
-      />
-      {form.state[name].error && <p>{form.state[name].error}</p>}
-    </>
-  );
-};
-```
-
-```jsx
-<CustomInput form={form} name="foo.bar.baz" />
-```
-
-Simply pass the object path as the `name` prop and this library will generate the object for you. But not only that, validate it against the provided schema.
