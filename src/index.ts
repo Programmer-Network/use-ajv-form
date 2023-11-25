@@ -4,6 +4,7 @@ import { ajv } from './utils/validation';
 
 import { FormField, IState, useFormErrors, UseFormReturn } from './utils/types';
 import { ErrorObject, JSONSchemaType } from 'ajv';
+import { useDebounce } from './Hooks/useDebounce';
 
 const useAJVForm = <T extends Record<string, any>>(
   initial: T,
@@ -13,6 +14,13 @@ const useAJVForm = <T extends Record<string, any>>(
   const initialStateRef = useRef<IState<T>>(getInitial(initial));
   const [state, setState] = useState<IState<T>>(getInitial(initial));
   const AJVValidate = ajv.compile(schema);
+
+  const [currentField, setCurrentField] = useState<{
+    name: keyof T;
+    editId: number;
+  } | null>(null);
+  const [editCounter, setEditCounter] = useState(0);
+  const debouncedField = useDebounce(currentField, 500);
 
   const resetForm = () => {
     setState(
@@ -28,34 +36,41 @@ const useAJVForm = <T extends Record<string, any>>(
     );
   };
 
-  const handleBlur = (fieldName: keyof T) => {
+  const validateField = (fieldName: keyof T) => {
     const isValid = AJVValidate({ [fieldName]: state[fieldName].value });
     const errors = AJVValidate.errors || [];
     const fieldErrors = isValid ? {} : getErrors(errors);
+
+    const error = isDirty ? fieldErrors[fieldName as string] || '' : '';
 
     setState((prevState) => ({
       ...prevState,
       [fieldName]: {
         ...prevState[fieldName],
-        error: fieldErrors[fieldName as string] || '',
+        error,
       },
     }));
   };
 
+  const handleBlur = (fieldName: keyof T) => {
+    validateField(fieldName);
+  };
+
   const setFormState = (form: Partial<FormField<T>>) => {
-    setState((currentState) => ({
-      ...currentState,
-      ...Object.keys(form).reduce((acc, key) => {
-        const fieldKey = key as keyof T;
-        return {
-          ...acc,
-          [fieldKey]: {
-            ...currentState[fieldKey],
-            value: getValue(form[fieldKey]),
-          },
-        };
-      }, {} as IState<T>),
-    }));
+    setState((current) => {
+      const name = Object.keys(form)[0] as keyof T;
+      const state = { ...current };
+      state[name] = {
+        ...state[name],
+        value: getValue(form[name]),
+        error: '',
+      };
+
+      setCurrentField({ name, editId: editCounter });
+      setEditCounter(editCounter + 1);
+
+      return state;
+    });
   };
 
   const setErrors = (errors: useFormErrors<T>) => {
@@ -119,6 +134,12 @@ const useAJVForm = <T extends Record<string, any>>(
     () => isFormDirty(state, initialStateRef.current),
     [state],
   );
+
+  useEffect(() => {
+    if (debouncedField) {
+      validateField(debouncedField.name);
+    }
+  }, [debouncedField]);
 
   useEffect(() => {
     if (!errors?.length) {

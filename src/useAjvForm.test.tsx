@@ -1,6 +1,15 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import useAJVForm from '.';
 import { JSONSchemaType } from 'ajv';
+import { vi } from 'vitest';
+
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('useAJVForm', () => {
   it('initializes correctly', () => {
@@ -145,7 +154,7 @@ describe('useAJVForm', () => {
   });
 
   it('validates secure-string custom ajv validator', () => {
-    const initialData = { title: 'Hello, world ++++' };
+    const initialData = { title: '' };
     const schema: JSONSchemaType<{
       title: string;
     }> = {
@@ -190,5 +199,46 @@ describe('useAJVForm', () => {
     result.current.onBlur('videoURL');
 
     expect(result.current.state.videoURL.error).toContain('Invalid YouTube URL');
+  });
+
+  it('debounces validation on change event', async () => {
+    const initialData = { title: '' };
+    const schema: JSONSchemaType<{ title: string }> = {
+      type: 'object',
+      required: ['title'],
+      properties: {
+        title: { type: 'string', minLength: 3 },
+      },
+    };
+
+    const { result } = renderHook(() => useAJVForm(initialData, schema));
+
+    result.current.set({ title: 'Hi' });
+
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+
+    expect(result.current.state.title.error).not.toBe('');
+  });
+
+  it('validates immediately on blur event', () => {
+    const initialData = { title: '' };
+    const schema: JSONSchemaType<{ title: string }> = {
+      type: 'object',
+      required: ['title'],
+      properties: {
+        title: { type: 'string', minLength: 3 },
+      },
+    };
+
+    const { result } = renderHook(() => useAJVForm(initialData, schema));
+
+    result.current.set({ title: 'Hi' });
+    result.current.onBlur('title');
+
+    expect(result.current.state.title.error).toBe(
+      'Should be at least 3 characters long.',
+    );
   });
 });
