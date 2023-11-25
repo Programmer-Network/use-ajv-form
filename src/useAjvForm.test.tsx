@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react-hooks';
 import useAJVForm from '.';
 import { JSONSchemaType } from 'ajv';
 import { vi } from 'vitest';
+import { keywords } from 'utils/validation';
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -168,7 +169,9 @@ describe('useAJVForm', () => {
       },
     };
 
-    const { result } = renderHook(() => useAJVForm(initialData, schema));
+    const { result } = renderHook(() =>
+      useAJVForm(initialData, schema, { customKeywords: [...keywords] }),
+    );
 
     result.current.set({ title: 'Hello, world ++++' });
     result.current.onBlur('title');

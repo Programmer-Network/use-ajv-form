@@ -3,13 +3,13 @@
  * @url https://github.com/ajv-validator/ajv-formats
  * @url https://github.com/ajv-validator/ajv-errors
  */
-import Ajv, { KeywordDefinition } from 'ajv';
+import Ajv from 'ajv';
 import addAjvErrors from 'ajv-errors';
 import addFormats from 'ajv-formats';
 // @ts-expect-error - Currently, there is no type definition for this package.
 import programmerNetworkAjv from 'programmer-network-ajv';
 
-const { keywords } = programmerNetworkAjv;
+export const { keywords } = programmerNetworkAjv;
 
 export const ajv = addFormats(
   addAjvErrors(
@@ -28,9 +28,3 @@ export const ajv = addFormats(
     }),
   ),
 );
-
-keywords.map((keyword: string | KeywordDefinition) => ajv.addKeyword(keyword));
-
-export const customKeywordNames = keywords.map((keyword: { keyword: string }) => {
-  return keyword.keyword;
-});

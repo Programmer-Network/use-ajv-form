@@ -1,43 +1,25 @@
-import { ErrorObject } from 'ajv';
+import Ajv, { ErrorObject, KeywordDefinition } from 'ajv';
 
-import { InitialState, useFormErrors } from './types';
+import { AJVMessageFunction, InitialState, useFormErrors } from './types';
 
 import { DefaultAJVMessages } from './types';
 import { defaultAJVMessages } from './constants';
-import { customKeywordNames } from './validation';
 
-// TODO: Is there a better way to do this?
-// This is error prone because not all keywords are covered.
 const getFieldName = (field: ErrorObject): string | null => {
-  if (customKeywordNames.includes(field.keyword)) {
-    return field.instancePath.slice(1);
-  }
-
-  switch (field.keyword) {
-    case 'required':
-      return field.params.missingProperty;
-    case 'errorMessage':
-    case 'minimum':
-    case 'maximum':
-    case 'type':
-    case 'minItems':
-    case 'maxItems':
-    case 'minLength':
-    case 'maxLength':
-    case 'format':
-    case 'secure-string':
-      return field.instancePath.slice(1);
-    default:
-      return null;
-  }
+  return field.instancePath.slice(1);
 };
 
-const getErrorMessage = (error: ErrorObject): string => {
+const getErrorMessage = (
+  error: ErrorObject,
+  userDefinedMessages?: Record<string, AJVMessageFunction>,
+): string => {
   const UNKNOWN_VALIDATION_ERROR = 'Unknown validation error';
 
   try {
     const keyword = error.keyword as keyof DefaultAJVMessages;
-    const errorMessageFunction = defaultAJVMessages[keyword];
+    const errorMessageFunction = { ...defaultAJVMessages, ...userDefinedMessages }[
+      keyword
+    ];
 
     if (typeof errorMessageFunction === 'function') {
       return errorMessageFunction(error.params);
@@ -51,6 +33,7 @@ const getErrorMessage = (error: ErrorObject): string => {
 
 export const getErrors = <T extends Record<string, any>>(
   ajvErrors: ErrorObject[],
+  userDefinedMessages?: Record<string, AJVMessageFunction>,
 ): useFormErrors<T> => {
   return ajvErrors.reduce((acc, current) => {
     const fieldName: string | null = getFieldName(current);
@@ -60,7 +43,7 @@ export const getErrors = <T extends Record<string, any>>(
 
     return {
       ...acc,
-      [fieldName]: getErrorMessage(current),
+      [fieldName]: getErrorMessage(current, userDefinedMessages),
     };
   }, {});
 };
@@ -85,4 +68,17 @@ export const getValue = (value: unknown) => {
   }
 
   return value ?? '';
+};
+
+export const addUserDefinedKeywords = (
+  ajv: Ajv,
+  customKeywords: KeywordDefinition[],
+): void => {
+  customKeywords.forEach((keyword: KeywordDefinition) => {
+    if (ajv.getKeyword(keyword.keyword as string)) {
+      return;
+    }
+
+    ajv.addKeyword(keyword);
+  });
 };

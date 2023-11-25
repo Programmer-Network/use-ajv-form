@@ -1,19 +1,29 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { getInitial, getValue, getErrors } from './utils';
+import { getInitial, getValue, getErrors, addUserDefinedKeywords } from './utils';
 import { ajv } from './utils/validation';
 
-import { FormField, IState, useFormErrors, UseFormReturn } from './utils/types';
-import { ErrorObject, JSONSchemaType } from 'ajv';
+import {
+  AJVMessageFunction,
+  FormField,
+  IState,
+  useFormErrors,
+  UseFormReturn,
+} from './utils/types';
+import { ErrorObject, JSONSchemaType, KeywordDefinition } from 'ajv';
 import { useDebounce } from './Hooks/useDebounce';
 
 const useAJVForm = <T extends Record<string, any>>(
   initial: T,
   schema: JSONSchemaType<T>,
-  errors?: ErrorObject[],
+  options?: {
+    customKeywords?: KeywordDefinition[];
+    errors?: ErrorObject[];
+    userDefinedMessages?: Record<string, AJVMessageFunction>;
+  },
 ): UseFormReturn<T> => {
   const initialStateRef = useRef<IState<T>>(getInitial(initial));
+
   const [state, setState] = useState<IState<T>>(getInitial(initial));
-  const AJVValidate = ajv.compile(schema);
 
   const [currentField, setCurrentField] = useState<{
     name: keyof T;
@@ -21,6 +31,12 @@ const useAJVForm = <T extends Record<string, any>>(
   } | null>(null);
   const [editCounter, setEditCounter] = useState(0);
   const debouncedField = useDebounce(currentField, 500);
+
+  if (options?.customKeywords?.length) {
+    addUserDefinedKeywords(ajv, options.customKeywords);
+  }
+
+  const AJVValidate = ajv.compile(schema);
 
   const resetForm = () => {
     setState(
@@ -39,7 +55,9 @@ const useAJVForm = <T extends Record<string, any>>(
   const validateField = (fieldName: keyof T) => {
     const isValid = AJVValidate({ [fieldName]: state[fieldName].value });
     const errors = AJVValidate.errors || [];
-    const fieldErrors = isValid ? {} : getErrors(errors);
+    const fieldErrors = isValid
+      ? {}
+      : getErrors(errors, options?.userDefinedMessages);
 
     const error = isDirty ? fieldErrors[fieldName as string] || '' : '';
 
@@ -100,7 +118,10 @@ const useAJVForm = <T extends Record<string, any>>(
       }, {} as T);
 
       if (!AJVValidate(data) && AJVValidate.errors) {
-        const errors: useFormErrors<T> = getErrors(AJVValidate.errors);
+        const errors: useFormErrors<T> = getErrors(
+          AJVValidate.errors,
+          options?.userDefinedMessages,
+        );
 
         setState(
           setErrors(
@@ -142,12 +163,12 @@ const useAJVForm = <T extends Record<string, any>>(
   }, [debouncedField]);
 
   useEffect(() => {
-    if (!errors?.length) {
+    if (!options?.errors?.length) {
       return;
     }
 
-    setState(setErrors(getErrors(errors)));
-  }, [errors]);
+    setState(setErrors(getErrors(options?.errors, options?.userDefinedMessages)));
+  }, [options?.errors]);
 
   return {
     reset: resetForm,

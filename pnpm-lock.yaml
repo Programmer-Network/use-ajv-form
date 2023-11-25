@@ -10,9 +10,6 @@ dependencies:
   ajv-formats:
     specifier: 2.1.1
     version: 2.1.1(ajv@8.12.0)
-  programmer-network-ajv:
-    specifier: github:Programmer-Network/Programmer-Network-AJV
-    version: github.com/Programmer-Network/Programmer-Network-AJV/27b21b7ce6e2896c518e9e429b87e7d3c1e385c2
   prop-types:
     specifier: 15.7.2
     version: 15.7.2
@@ -81,6 +78,9 @@ devDependencies:
   prettier:
     specifier: 3.0.3
     version: 3.0.3
+  programmer-network-ajv:
+    specifier: github:Programmer-Network/Programmer-Network-AJV
+    version: github.com/Programmer-Network/Programmer-Network-AJV/27b21b7ce6e2896c518e9e429b87e7d3c1e385c2
   react-hooks:
     specifier: link:@types/@testing-library/react-hooks
     version: link:@types/@testing-library/react-hooks
@@ -4437,4 +4437,4 @@ packages:
     version: 0.0.0
     prepare: true
     requiresBuild: true
-    dev: false
+    dev: true
