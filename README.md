@@ -36,4 +36,4 @@ Below is a table describing the options you can pass to `useAJVForm`:
 
 ## Usage
 
-Here's a basic example of using `useAJVForm` inside of our [Yail Storybook](https://yail.programmer.network/?path=/story/input-forms--use-ajv-form)
+Here's a basic example of using `useAJVForm` inside of our [Yail Storybook](https://yail.programmer.network/?path=/docs/input-forms--docs).
