@@ -225,6 +225,45 @@ describe('useAJVForm', () => {
     expect(result.current.state.title.error).not.toBe('');
   });
 
+  it('should not validate and debounce if shouldDebounceAndValidate is set to false', async () => {
+    const initialData = { title: '' };
+    const schema: JSONSchemaType<{ title: string }> = {
+      type: 'object',
+      required: ['title'],
+      properties: {
+        title: { type: 'string', minLength: 3 },
+      },
+    };
+
+    const { result } = renderHook(() => useAJVForm(initialData, schema));
+
+    result.current.set({ title: 'Hi' });
+    expect(result.current.state.title.error).toBe('');
+  });
+
+  it('should use debounceTime argument for the useDebounce', async () => {
+    const initialData = { title: '' };
+    const schema: JSONSchemaType<{ title: string }> = {
+      type: 'object',
+      required: ['title'],
+      properties: {
+        title: { type: 'string', minLength: 3 },
+      },
+    };
+
+    const { result } = renderHook(() =>
+      useAJVForm(initialData, schema, { debounceTime: 1000 }),
+    );
+
+    result.current.set({ title: 'Hi' });
+
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    expect(result.current.state.title.error).not.toBe('');
+  });
+
   it('validates immediately on blur event', () => {
     const initialData = { title: '' };
     const schema: JSONSchemaType<{ title: string }> = {
@@ -243,5 +282,55 @@ describe('useAJVForm', () => {
     expect(result.current.state.title.error).toBe(
       'Should be at least 3 characters long.',
     );
+  });
+
+  it('should overwrite the existing error message by providing userDefinedMessages', () => {
+    const initialData = { title: '' };
+    const schema: JSONSchemaType<{ title: string }> = {
+      type: 'object',
+      required: ['title'],
+      properties: {
+        title: { type: 'string', minLength: 3 },
+      },
+    };
+
+    const { result } = renderHook(() =>
+      useAJVForm(initialData, schema, {
+        userDefinedMessages: {
+          minLength: () => 'Monkey message',
+        },
+      }),
+    );
+
+    result.current.set({ title: 'Hi' });
+    result.current.onBlur('title');
+
+    expect(result.current.state.title.error).toBe('Monkey message');
+  });
+
+  it('should correctly update isValid based on form errors', () => {
+    const initialData = { title: '' };
+    const schema: JSONSchemaType<{ title: string }> = {
+      type: 'object',
+      required: ['title'],
+      properties: {
+        title: { type: 'string', minLength: 3 },
+      },
+    };
+
+    const { result } = renderHook(() => useAJVForm(initialData, schema));
+
+    result.current.validate();
+
+    expect(result.current.isValid).toBe(false);
+
+    result.current.set({ title: 'Hello' });
+    result.current.onBlur('title');
+
+    expect(result.current.isValid).toBe(true);
+    result.current.set({ title: 'Hi' });
+    result.current.onBlur('title');
+
+    expect(result.current.isValid).toBe(false);
   });
 });

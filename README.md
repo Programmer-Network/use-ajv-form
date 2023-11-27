@@ -14,20 +14,24 @@ This library is a part of the toolkit used extensively on [Programmer Network](h
 - **Plugin Extensibility**: Supports Ajv [plugins](https://ajv.js.org/packages/) for custom validators, enhancing schema flexibility.
 - **Design Agnostic**: Offers full freedom in how you structure, style, and handle your forms.
 
-## Features
-
-- **JSON Schema Validation**: Validates form data against a specified JSON schema.
-- **Dirty State Tracking**: Identifies changes in form fields.
-- **Remote Error Handling**: Manages errors from external sources (like APIs) as part of schema validation.
-
 ## Installation
 
 ```bash
 pnpm add @programmer_network/use-ajv-form
-# or
-bun install @programmer_network/use-ajv-form
-# or
-yarn add @programmer_network/use-ajv-form
-# or
-npm install @programmer_network/use-ajv-form
 ```
+
+## Options
+
+Below is a table describing the options you can pass to `useAJVForm`:
+
+| Option                      | Type                                 | Description                                                                                            |
+| --------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `customKeywords`            | `KeywordDefinition[]`                | Custom AJV keywords for additional validation logic.                                                   |
+| `errors`                    | `ErrorObject[]`                      | Pre-defined errors to set initial form errors. This could also be errors originating from your API.    |
+| `userDefinedMessages`       | `Record<string, AJVMessageFunction>` | Custom error messages for validation errors.                                                           |
+| `shouldDebounceAndValidate` | `boolean`                            | If `true`, enables debouncing for field validation.                                                    |
+| `debounceTime`              | `number`                             | Time in milliseconds for debouncing validation. Ignore if `shouldDebounceAndValidate` is set to false. |
+
+## Usage
+
+Here's a basic example of using `useAJVForm` inside of our [Yail Storybook](https://yail.programmer.network/?path=/story/input-forms--use-ajv-form)

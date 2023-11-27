@@ -19,6 +19,8 @@ const useAJVForm = <T extends Record<string, any>>(
     customKeywords?: KeywordDefinition[];
     errors?: ErrorObject[];
     userDefinedMessages?: Record<string, AJVMessageFunction>;
+    shouldDebounceAndValidate?: boolean;
+    debounceTime?: number;
   },
 ): UseFormReturn<T> => {
   const initialStateRef = useRef<IState<T>>(getInitial(initial));
@@ -30,7 +32,7 @@ const useAJVForm = <T extends Record<string, any>>(
     editId: number;
   } | null>(null);
   const [editCounter, setEditCounter] = useState(0);
-  const debouncedField = useDebounce(currentField, 500);
+  const debouncedField = useDebounce(currentField, options?.debounceTime || 500);
 
   if (options?.customKeywords?.length) {
     addUserDefinedKeywords(ajv, options.customKeywords);
@@ -151,15 +153,23 @@ const useAJVForm = <T extends Record<string, any>>(
     );
   };
 
+  const isFormValid = (currentState: IState<T>): boolean => {
+    return !Object.keys(currentState).some((key) => currentState[key].error !== '');
+  };
+
   const isDirty = useMemo(
     () => isFormDirty(state, initialStateRef.current),
     [state],
   );
 
+  const isValid = useMemo(() => isFormValid(state), [state]);
+
   useEffect(() => {
-    if (debouncedField) {
-      validateField(debouncedField.name);
+    if (options?.shouldDebounceAndValidate === false || !debouncedField) {
+      return;
     }
+
+    validateField(debouncedField.name);
   }, [debouncedField]);
 
   useEffect(() => {
@@ -175,6 +185,7 @@ const useAJVForm = <T extends Record<string, any>>(
     set: setFormState,
     validate: validateForm,
     onBlur: handleBlur,
+    isValid,
     isDirty,
     state,
   };

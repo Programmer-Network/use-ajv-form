@@ -59,5 +59,6 @@ export interface UseFormReturn<T> {
   reset: () => void;
   validate: () => ValidateResult<T>;
   isDirty: boolean;
+  isValid: boolean;
   onBlur: (fieldName: string) => void;
 }

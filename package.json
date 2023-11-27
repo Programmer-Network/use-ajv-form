@@ -1,6 +1,6 @@
 {
   "name": "@programmer_network/use-ajv-form",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Custom React Hook that integrates with Ajv JSON Schema Validator",
   "main": "dist/use-ajv-form.es.js",
   "author": "Aleksandar Grbic",
@@ -73,13 +73,13 @@
     "husky": "8.0.3",
     "jsdom": "22.1.0",
     "prettier": "3.0.3",
+    "programmer-network-ajv": "github:Programmer-Network/Programmer-Network-AJV",
     "react-hooks": "link:@types/@testing-library/react-hooks",
     "typescript": "5.2.2",
     "vite": "5.0.2",
     "vite-plugin-dts": "3.6.3",
     "vite-tsconfig-paths": "4.2.1",
-    "vitest": "0.34.6",
-    "programmer-network-ajv": "github:Programmer-Network/Programmer-Network-AJV"
+    "vitest": "0.34.6"
   },
   "files": [
     "dist"
