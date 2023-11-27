@@ -26,13 +26,13 @@ pnpm add @programmer_network/use-ajv-form
 
 Below is a table describing the options you can pass to `useAJVForm`:
 
-| Option                      | Type                                 | Description                                                                                            |
-| --------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| `customKeywords`            | `KeywordDefinition[]`                | Custom AJV keywords for additional validation logic.                                                   |
-| `errors`                    | `ErrorObject[]`                      | Pre-defined errors to set initial form errors. This could also be errors originating from your API.    |
-| `userDefinedMessages`       | `Record<string, AJVMessageFunction>` | Custom error messages for validation errors.                                                           |
-| `shouldDebounceAndValidate` | `boolean`                            | If `true`, enables debouncing for field validation.                                                    |
-| `debounceTime`              | `number`                             | Time in milliseconds for debouncing validation. Ignore if `shouldDebounceAndValidate` is set to false. |
+| Option                      | Type                                 | Description                                                                                             |
+| --------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `customKeywords`            | `KeywordDefinition[]`                | Custom AJV keywords for additional validation logic.                                                    |
+| `errors`                    | `ErrorObject[]`                      | Pre-defined errors to set initial form errors. This could also be errors originating from your API.     |
+| `userDefinedMessages`       | `Record<string, AJVMessageFunction>` | Custom error messages for validation errors.                                                            |
+| `shouldDebounceAndValidate` | `boolean`                            | If `true`, enables debouncing for field validation.                                                     |
+| `debounceTime`              | `number`                             | Time in milliseconds for debouncing validation. Ignored if `shouldDebounceAndValidate` is set to false. |
 
 ## Usage
 
