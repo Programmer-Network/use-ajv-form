@@ -83,7 +83,7 @@ const useAJVForm = <T extends Record<string, any>>(
       state[name] = {
         ...state[name],
         value: getValue(form[name]),
-        error: '',
+        error: state[name]?.error || '',
       };
 
       setCurrentField({ name, editId: editCounter });

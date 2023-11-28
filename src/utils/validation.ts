@@ -6,10 +6,6 @@
 import Ajv from 'ajv';
 import addAjvErrors from 'ajv-errors';
 import addFormats from 'ajv-formats';
-// @ts-expect-error - Currently, there is no type definition for this package.
-import programmerNetworkAjv from 'programmer-network-ajv';
-
-export const { keywords } = programmerNetworkAjv;
 
 export const ajv = addFormats(
   addAjvErrors(

@@ -2,7 +2,10 @@ import { act, renderHook } from '@testing-library/react-hooks';
 import useAJVForm from '.';
 import { JSONSchemaType } from 'ajv';
 import { vi } from 'vitest';
-import { keywords } from 'utils/validation';
+
+// @ts-expect-error - Currently, there is no type definition for this package.
+import programmerNetworkAjv from 'programmer-network-ajv';
+export const { keywords } = programmerNetworkAjv;
 
 beforeEach(() => {
   vi.useFakeTimers();

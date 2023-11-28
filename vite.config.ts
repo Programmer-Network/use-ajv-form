@@ -16,7 +16,7 @@ export default defineConfig({
     lib: {
       entry: 'src/index.ts',
       name: 'use-ajv-form',
-      formats: ['es', 'umd'],
+      formats: ['es'],
       fileName: (format) => `use-ajv-form.${format}.js`,
     },
     rollupOptions: {
