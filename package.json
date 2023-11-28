@@ -86,7 +86,8 @@
   "keywords": [
     "react",
     "react hooks",
-    "typescript",
-    "npm"
+    "ajv",
+    "form validation",
+    "json schema validation"
   ]
 }
