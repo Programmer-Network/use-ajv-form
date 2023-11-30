@@ -111,7 +111,13 @@ function withAJVInput<T>(
 }
 
 const Input = withAJVInput(YourOwnInputComponent);
-<Input form={form} name="title" />;
+
+// Then somewhere in your component
+// ...
+return <div>
+  <Input form={form} name="title" />;
+</div>
+
 ```
 
 Note: The HOC example provided is just one way to enhance your experience with `use-ajv-form`. We encourage creativity and experimentation to suit your specific needs. For example, employing a factory pattern could streamline the process further. Our philosophy with `use-ajv-form` is its adaptability—it's designed to work seamlessly in any setup, with any architecture.
