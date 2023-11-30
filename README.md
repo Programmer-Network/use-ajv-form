@@ -18,7 +18,7 @@ This library, a part of the toolkit used extensively on [Programmer Network](htt
 - **Plugin Extensibility**: 🌃 Supports Ajv [plugins](https://ajv.js.org/packages/) for custom validators, adding flexibility to schemas.
 - **Design Agnostic**: 🖼️ Provides complete freedom in structuring, styling, and managing forms.
 - **Ease of Integration**: 🚴🏻 Simplifies form handling with minimal code, enhancing the developer experience.
-- **Isomorphic Usage**: 🧙 Ideal for projects utilizing AJV on the backend (e.g., with Node.js or Fastify), as it allows you to share the same schemas, plugins, and custom validators between front-end and back-end, ensuring consistency and efficiency in validation logic.
+- **Isomorphic Usage**: 🧙 Ideal for projects utilizing AJV on the backend (e.g., with Node.js or [Fastify](https://fastify.dev/docs/latest/Reference/Validation-and-Serialization/)), as it allows you to share the same schemas, plugins, and custom validators between front-end and back-end, ensuring consistency and efficiency in validation logic. _(We do this already here at [PN](https://programmer.network), take a look at [Programmer Network AJV](https://github.com/Programmer-Network/Programmer-Network-AJV))_.
 
 ## Installation
 
