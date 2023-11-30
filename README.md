@@ -150,6 +150,47 @@ const handleSubmit = (e) => {
 </form>;
 ```
 
+Your explanation about using `isValid` and `isDirty` for conditional rendering in forms is clear and informative. Here's an improved version with some extensions and code refinement:
+
+---
+
+### Using `isValid` and `isDirty` for Conditional Rendering in Forms
+
+In some scenarios, it's useful to conditionally render elements based on the form's validity or whether the form has been interacted with (i.e., is "dirty"). While disabling the submit button for an invalid form is generally not recommended due to accessibility concerns, there are other ways to provide feedback to the user.
+
+For example, product managers often require displaying error messages below a form, particularly in long forms, to inform users about any issues after submission.
+
+Here’s how you can implement this in a long form scenario:
+
+```jsx
+<form onSubmit={handleSubmit}>
+  <input
+    type="text"
+    value={form.state.title.value}
+    onBlur={() => form.onBlur('title')}
+  />
+  <span>{form.state.title.error}</span>
+  <button type="submit">Save</button>
+</form>;
+
+{
+  !form.isValid && (
+    <div>
+      {Object.keys(form.state).map((inputName) => {
+        const error = form.state[inputName].error;
+        return error ? (
+          <div key={inputName}>
+            {inputName}: {error}
+          </div>
+        ) : null;
+      })}
+    </div>
+  );
+}
+```
+
+In this example, if the form is invalid (`!form.isValid`), we loop through the `form.state` object and render each error message. Each error message is associated with its corresponding field name for clarity. This approach helps in guiding users to correct their inputs, especially in long forms where errors might not be immediately visible.
+
 ### Exports from useAJVForm
 
 The `useAJVForm` hook provides a set of utilities and state indicators for robust form management and validation. Below is a detailed description of each export from the hook:
