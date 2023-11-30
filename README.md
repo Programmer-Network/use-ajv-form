@@ -150,10 +150,6 @@ const handleSubmit = (e) => {
 </form>;
 ```
 
-Your explanation about using `isValid` and `isDirty` for conditional rendering in forms is clear and informative. Here's an improved version with some extensions and code refinement:
-
----
-
 ### Using `isValid` and `isDirty` for Conditional Rendering in Forms
 
 In some scenarios, it's useful to conditionally render elements based on the form's validity or whether the form has been interacted with (i.e., is "dirty"). While disabling the submit button for an invalid form is generally not recommended due to accessibility concerns, there are other ways to provide feedback to the user.
