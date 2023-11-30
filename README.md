@@ -71,7 +71,44 @@ This approach can become repetitive, so we advise creating a simple higher-order
 ```jsx
 // Higher-Order Component to enhance form inputs
 import React, { useCallback } from 'react';
-// ... [HOC Code] ...
+
+export interface IWithFormInputProps {
+  form: UseFormReturn<any>;
+  name: string;
+}
+
+export interface IInjectedFormProps {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBlur: () => void;
+  error?: string;
+}
+
+function withAJVInput<T>(
+  WrappedComponent: React.ComponentType<IInjectedFormProps & T>,
+) {
+  return function HOC({ form, name, ...rest }: IWithFormInputProps & T) {
+    const handleChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        form.set({ [name]: e.target.value });
+      },
+      [form, name],
+    );
+
+    const handleBlur = useCallback(() => {
+      form.onBlur(name);
+    }, [form, name]);
+
+    const injectedProps: IInjectedFormProps = {
+      value: form.state[name]?.value || '',
+      onChange: handleChange,
+      onBlur: handleBlur,
+      error: form.state[name]?.error,
+    };
+
+    return <WrappedComponent {...injectedProps} {...(rest as T)} />;
+  };
+}
 
 const Input = withAJVInput(YourOwnInputComponent);
 <Input form={form} name="title" />;
