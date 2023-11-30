@@ -6,16 +6,19 @@
   <img src="./assets/ajv-react.png" alt="AJV React Logo">
 </p>
 
+> "The most awesome React form validation library I've ever used." - **Gill Bates** 😉
+
 [use-ajv-form](https://github.com/agjs/use-ajv-form) is a custom React Hook enabling powerful and efficient form logic and validation using [Ajv JSON Schema Validator](https://ajv.js.org/). Designed for ease of integration, it offers an elegant solution to incorporate state and validation into any form, independent of the form's design and presentation.
 
 This library, a part of the toolkit used extensively on [Programmer Network](https://programmer.network/), is fostered by our vibrant community on the [Programmer Network Twitch Channel](https://twitch.tv/programmer_network).
 
 ## Why Use React AJV Schema?
 
-- **Streamlined Form Validation**: Automates form validation against the [JSON Schema Specification](https://json-schema.org/specification.html), significantly reducing manual validation needs.
-- **Plugin Extensibility**: Supports Ajv [plugins](https://ajv.js.org/packages/) for custom validators, adding flexibility to schemas.
-- **Design Agnostic**: Provides complete freedom in structuring, styling, and managing forms.
-- **Ease of Integration**: Simplifies form handling with minimal code, enhancing developer experience.
+- **Streamlined Form Validation**: 🌞 Automates form validation against the [JSON Schema Specification](https://json-schema.org/specification.html), significantly reducing manual validation needs.
+- **Plugin Extensibility**: 🌃 Supports Ajv [plugins](https://ajv.js.org/packages/) for custom validators, adding flexibility to schemas.
+- **Design Agnostic**: 🖼️ Provides complete freedom in structuring, styling, and managing forms.
+- **Ease of Integration**: 🚴🏻 Simplifies form handling with minimal code, enhancing the developer experience.
+- **Isomorphic Usage**: 🧙 Ideal for projects utilizing AJV on the backend (e.g., with Node.js or Fastify), as it allows you to share the same schemas, plugins, and custom validators between front-end and back-end, ensuring consistency and efficiency in validation logic.
 
 ## Installation
 
