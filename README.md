@@ -108,18 +108,15 @@ const handleSubmit = (e) => {
 
 The `useAJVForm` hook provides a set of utilities and state indicators for robust form management and validation. Below is a detailed description of each export from the hook:
 
-| Export  | Type       | Description                               |
-| ------- | ---------- | ----------------------------------------- |
-| `reset` | `Function` | Resets the form to its initial state.     |
-| `set`   | `Function` | Sets the state for a specific form field. |
-
-|
-
-`validate` | `Function` | Validates the entire form against the provided AJV schema. |
-| `onBlur` | `Function` | Handler function to be called on the onBlur event of a form field. |
-| `isValid` | `boolean` | Indicates whether the form is currently valid according to the schema. |
-| `isDirty` | `boolean` | Indicates whether the form has been modified from its initial state. |
-| `state` | `IState<T>` | The current state of the form, including values and errors for each field. |
+| Export     | Type        | Description                                                                |
+| ---------- | ----------- | -------------------------------------------------------------------------- |
+| `reset`    | `Function`  | Resets the form to its initial state.                                      |
+| `set`      | `Function`  | Sets the state for a specific form field.                                  |
+| `validate` | `Function`  | Validates the entire form against the provided AJV schema.                 |
+| `onBlur`   | `Function`  | Handler function to be called on the onBlur event of a form field.         |
+| `isValid`  | `boolean`   | Indicates whether the form is currently valid according to the schema.     |
+| `isDirty`  | `boolean`   | Indicates whether the form has been modified from its initial state.       |
+| `state`    | `IState<T>` | The current state of the form, including values and errors for each field. |
 
 ## Options
 
