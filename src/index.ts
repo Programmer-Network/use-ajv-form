@@ -187,6 +187,12 @@ const useAJVForm = <T extends Record<string, any>>(
     onBlur: handleBlur,
     isValid,
     isDirty,
+    data: Object.keys(state).reduce((acc, fieldName) => {
+      return {
+        ...acc,
+        [fieldName]: getValue(state[fieldName].value),
+      };
+    }, {} as T),
     state,
   };
 };

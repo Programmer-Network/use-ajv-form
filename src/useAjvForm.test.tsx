@@ -336,4 +336,34 @@ describe('useAJVForm', () => {
 
     expect(result.current.isValid).toBe(false);
   });
+
+  it('should correctly set data object', () => {
+    const initialData = { title: '', description: '' };
+    const schema: JSONSchemaType<{ title: string; description: string }> = {
+      type: 'object',
+      required: ['title'],
+      properties: {
+        title: { type: 'string' },
+        description: { type: 'string' },
+      },
+    };
+
+    const { result } = renderHook(() => useAJVForm(initialData, schema));
+
+    result.current.validate();
+
+    result.current.set({ title: 'Hello' });
+    result.current.onBlur('title');
+
+    expect(result.current.data).toEqual({ title: 'Hello', description: '' });
+    expect(result.current.isValid).toBe(true);
+
+    result.current.set({ title: '112' });
+    result.current.set({ description: 'John Doe' });
+    result.current.onBlur('title');
+
+    expect(result.current.data).toEqual({ title: '112', description: 'John Doe' });
+
+    expect(result.current.isValid).toBe(true);
+  });
 });

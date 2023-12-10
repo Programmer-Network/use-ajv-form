@@ -54,6 +54,7 @@ export type useFormErrors<T> = {
   [K in keyof T]?: string;
 };
 export interface UseFormReturn<T> {
+  data: T;
   state: IState<T>;
   set: (form: Partial<{ [K in keyof T]: T[K] }>) => void;
   reset: () => void;
