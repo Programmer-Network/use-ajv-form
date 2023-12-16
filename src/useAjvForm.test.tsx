@@ -102,9 +102,7 @@ describe('useAJVForm', () => {
 
     const { result } = renderHook(() => useAJVForm(initialData, schema));
 
-    act(() => {
-      result.current.set({ title: 'New Title' });
-    });
+    result.current.set({ title: 'New Title' });
 
     result.current.reset();
 
@@ -366,4 +364,80 @@ describe('useAJVForm', () => {
 
     expect(result.current.isValid).toBe(true);
   });
+});
+
+describe('useAJVForm with multiple field updates', () => {
+  it('updates multiple fields at once', () => {
+    const initialData = { title: '', description: '' };
+    const schema: JSONSchemaType<{ title: string; description: string }> = {
+      type: 'object',
+      required: ['title', 'description'],
+      properties: {
+        title: { type: 'string' },
+        description: { type: 'string' },
+      },
+    };
+
+    const { result } = renderHook(() => useAJVForm(initialData, schema));
+
+    result.current.set({ title: 'New Title', description: 'New Description' });
+
+    expect(result.current.state.title.value).toBe('New Title');
+    expect(result.current.state.description.value).toBe('New Description');
+  });
+
+  it('preserves existing error messages when updating multiple fields', () => {
+    const initialData = { title: '', description: '' };
+    const schema: JSONSchemaType<{ title: string; description: string }> = {
+      type: 'object',
+      required: ['title', 'description'],
+      properties: {
+        title: { type: 'string', minLength: 3 },
+        description: { type: 'string', minLength: 3 },
+      },
+    };
+
+    const { result } = renderHook(() => useAJVForm(initialData, schema));
+
+    result.current.set({ title: 'Ti', description: 'De' });
+    result.current.onBlur('title');
+    result.current.onBlur('description');
+
+    expect(result.current.state.title.error).not.toBe('');
+    expect(result.current.state.description.error).not.toBe('');
+
+    expect(result.current.state.title.error).toBe(
+      'Should be at least 3 characters long.',
+    );
+    expect(result.current.state.description.error).toBe(
+      'Should be at least 3 characters long.',
+    );
+  });
+
+  it('correctly updates isDirty when multiple fields are changed', () => {
+    const initialData = {
+      title: 'Original Title',
+      description: 'Original Description',
+    };
+    const schema: JSONSchemaType<{ title: string; description: string }> = {
+      type: 'object',
+      required: ['title', 'description'],
+      properties: {
+        title: { type: 'string' },
+        description: { type: 'string' },
+      },
+    };
+
+    const { result } = renderHook(() => useAJVForm(initialData, schema));
+
+    result.current.set({
+      title: 'Changed Title',
+      description: 'Changed Description',
+    });
+
+    expect(result.current.isDirty).toBe(true);
+  });
+
+  // Additional tests can be written to cover other scenarios such as validation,
+  // resetting the form, handling errors, etc., when multiple fields are involved.
 });

@@ -78,18 +78,24 @@ const useAJVForm = <T extends Record<string, any>>(
 
   const setFormState = (form: Partial<FormField<T>>) => {
     setState((current) => {
-      const name = Object.keys(form)[0] as keyof T;
-      const state = { ...current };
-      state[name] = {
-        ...state[name],
-        value: getValue(form[name]),
-        error: state[name]?.error || '',
-      };
+      const newState = { ...current };
 
-      setCurrentField({ name, editId: editCounter });
+      Object.keys(form).forEach((key) => {
+        const name = key as keyof T;
+        newState[name] = {
+          ...newState[name],
+          value: getValue(form[name]),
+          error: newState[name]?.error || '',
+        };
+      });
+
+      setCurrentField({
+        name: Object.keys(form)[0] as keyof T,
+        editId: editCounter,
+      });
       setEditCounter(editCounter + 1);
 
-      return state;
+      return newState;
     });
   };
 
