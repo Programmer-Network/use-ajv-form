@@ -2,11 +2,15 @@ import Ajv, { ErrorObject, KeywordDefinition } from 'ajv';
 
 import { AJVMessageFunction, InitialState, useFormErrors } from './types';
 
-import { DefaultAJVMessages } from './types';
+// import { DefaultAJVMessages } from './types';
 import { defaultAJVMessages } from './constants';
 
-const getFieldName = (field: ErrorObject): string | null => {
-  return field.instancePath.slice(1);
+const getFieldName = (instancePath: string): string | null => {
+  if (!instancePath) {
+    return null;
+  }
+
+  return instancePath.slice(1);
 };
 
 const getErrorMessage = (
@@ -16,13 +20,14 @@ const getErrorMessage = (
   const UNKNOWN_VALIDATION_ERROR = 'Unknown validation error';
 
   try {
-    const keyword = error.keyword as keyof DefaultAJVMessages;
+    const errorObject = error as ErrorObject;
+    const keyword = errorObject.keyword;
     const errorMessageFunction = { ...defaultAJVMessages, ...userDefinedMessages }[
       keyword
     ];
 
     if (typeof errorMessageFunction === 'function') {
-      return errorMessageFunction(error.params);
+      return errorMessageFunction(errorObject.params);
     }
 
     return error.message || UNKNOWN_VALIDATION_ERROR;
@@ -36,7 +41,7 @@ export const getErrors = <T extends Record<string, any>>(
   userDefinedMessages?: Record<string, AJVMessageFunction>,
 ): useFormErrors<T> => {
   return ajvErrors.reduce((acc, current) => {
-    const fieldName: string | null = getFieldName(current);
+    const fieldName: string | null = getFieldName(current?.instancePath);
     if (!fieldName) {
       return acc;
     }

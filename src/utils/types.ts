@@ -1,3 +1,5 @@
+import { ErrorObject } from 'ajv';
+
 export type AJVErrorParams = {
   limit?: number;
   missingProperty?: string;
@@ -18,12 +20,6 @@ export type DefaultAJVMessages = {
   enum: AJVMessageFunction;
   type: AJVMessageFunction;
   format: AJVMessageFunction;
-};
-
-export type ErrorObject = {
-  keyword: keyof DefaultAJVMessages;
-  params: AJVErrorParams;
-  message?: string;
 };
 
 export type FormField<T> = {
@@ -62,4 +58,5 @@ export interface UseFormReturn<T> {
   isDirty: boolean;
   isValid: boolean;
   onBlur: (fieldName: string) => void;
+  setErrors: (errors: ErrorObject[]) => void;
 }

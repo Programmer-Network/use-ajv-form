@@ -437,7 +437,76 @@ describe('useAJVForm with multiple field updates', () => {
 
     expect(result.current.isDirty).toBe(true);
   });
+});
 
-  // Additional tests can be written to cover other scenarios such as validation,
-  // resetting the form, handling errors, etc., when multiple fields are involved.
+describe('useAJVForm should properly set errors programmatically using setErrors function', () => {
+  it('sets the errors using form.setErrors without having any userDefinedMessages', () => {
+    const initialData = { title: '', description: '' };
+    const schema: JSONSchemaType<{ title: string; description: string }> = {
+      type: 'object',
+      required: ['title', 'description'],
+      properties: {
+        title: { type: 'string' },
+        description: { type: 'string' },
+      },
+    };
+
+    const { result } = renderHook(() => useAJVForm(initialData, schema));
+
+    result.current.setErrors([
+      {
+        instancePath: '/title',
+        keyword: 'required',
+        params: { missingProperty: 'title' },
+        schemaPath: '#/required',
+      },
+      {
+        instancePath: '/description',
+        keyword: 'required',
+        params: { missingProperty: 'description' },
+        schemaPath: '#/required',
+      },
+    ]);
+
+    expect(result.current.state.title.error).toBe('title is required.');
+    expect(result.current.state.description.error).toBe('description is required.');
+  });
+
+  it('sets the errors using form.setErrors with userDefinedMessages', () => {
+    const initialData = { title: '', description: '' };
+    const schema: JSONSchemaType<{ title: string; description: string }> = {
+      type: 'object',
+      required: ['title', 'description'],
+      properties: {
+        title: { type: 'string' },
+        description: { type: 'string' },
+      },
+    };
+
+    const { result } = renderHook(() =>
+      useAJVForm(initialData, schema, {
+        userDefinedMessages: {
+          required: () => 'Monkey message',
+        },
+      }),
+    );
+
+    result.current.setErrors([
+      {
+        instancePath: '/title',
+        keyword: 'required',
+        params: { missingProperty: 'title' },
+        schemaPath: '#/required',
+      },
+      {
+        instancePath: '/description',
+        keyword: 'required',
+        params: { missingProperty: 'description' },
+        schemaPath: '#/required',
+      },
+    ]);
+
+    expect(result.current.state.title.error).toBe('Monkey message');
+    expect(result.current.state.description.error).toBe('Monkey message');
+  });
 });

@@ -99,7 +99,7 @@ const useAJVForm = <T extends Record<string, any>>(
     });
   };
 
-  const setErrors = (errors: useFormErrors<T>) => {
+  const _setErrors = (errors: useFormErrors<T>) => {
     return Object.keys(errors).reduce(
       (acc, fieldName) => {
         const key = fieldName as keyof typeof state;
@@ -132,7 +132,7 @@ const useAJVForm = <T extends Record<string, any>>(
         );
 
         setState(
-          setErrors(
+          _setErrors(
             Object.keys(errors).reduce((acc, fieldName) => {
               return {
                 ...acc,
@@ -168,6 +168,10 @@ const useAJVForm = <T extends Record<string, any>>(
     [state],
   );
 
+  const setErrors = (errors: ErrorObject[]): void => {
+    setState(_setErrors(getErrors(errors, options?.userDefinedMessages)));
+  };
+
   const isValid = useMemo(() => isFormValid(state), [state]);
 
   useEffect(() => {
@@ -183,12 +187,13 @@ const useAJVForm = <T extends Record<string, any>>(
       return;
     }
 
-    setState(setErrors(getErrors(options?.errors, options?.userDefinedMessages)));
+    setState(_setErrors(getErrors(options?.errors, options?.userDefinedMessages)));
   }, [options?.errors]);
 
   return {
     reset: resetForm,
     set: setFormState,
+    setErrors,
     validate: validateForm,
     onBlur: handleBlur,
     isValid,
