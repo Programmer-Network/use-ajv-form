@@ -1,16 +1,16 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { getInitial, getValue, getErrors, addUserDefinedKeywords } from './utils';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { addUserDefinedKeywords, getErrors, getInitial, getValue } from './utils';
 import { ajv } from './utils/validation';
 
+import { ErrorObject, JSONSchemaType, KeywordDefinition } from 'ajv';
+import { useDebounce } from './Hooks/useDebounce';
 import {
   AJVMessageFunction,
   FormField,
   IState,
-  useFormErrors,
   UseFormReturn,
+  useFormErrors,
 } from './utils/types';
-import { ErrorObject, JSONSchemaType, KeywordDefinition } from 'ajv';
-import { useDebounce } from './Hooks/useDebounce';
 
 const useAJVForm = <T extends Record<string, any>>(
   initial: T,
@@ -41,17 +41,7 @@ const useAJVForm = <T extends Record<string, any>>(
   const AJVValidate = ajv.compile(schema);
 
   const resetForm = () => {
-    setState(
-      Object.keys(state).reduce((acc, name) => {
-        return {
-          ...acc,
-          [name]: {
-            value: '',
-            error: '',
-          },
-        };
-      }, {} as IState<T>),
-    );
+    setState(initialStateRef.current);
   };
 
   const validateField = (fieldName: keyof T) => {
@@ -93,6 +83,7 @@ const useAJVForm = <T extends Record<string, any>>(
         name: Object.keys(form)[0] as keyof T,
         editId: editCounter,
       });
+
       setEditCounter(editCounter + 1);
 
       return newState;
@@ -144,6 +135,11 @@ const useAJVForm = <T extends Record<string, any>>(
 
         return { isValid: false, data: null };
       }
+
+      if (!isFormValid(state, initialStateRef.current)) {
+        return { isValid: false, data: null };
+      }
+
       return { isValid: true, data };
     } catch (error) {
       return { isValid: false, data: null };
@@ -159,9 +155,22 @@ const useAJVForm = <T extends Record<string, any>>(
     );
   };
 
-  const isFormValid = (currentState: IState<T>): boolean => {
-    return !Object.keys(currentState).some((key) => currentState[key].error !== '');
+  const isFormValid = (
+    currentState: IState<T>,
+    initialState: IState<T>,
+  ): boolean => {
+    const hasErrors = Object.keys(currentState).some(
+      (key) => currentState[key].error !== '',
+    );
+
+    const formIsDirty = isFormDirty(currentState, initialState);
+
+    return !hasErrors && formIsDirty;
   };
+
+  const isValid = useMemo(() => {
+    return isFormValid(state, initialStateRef.current);
+  }, [state]);
 
   const isDirty = useMemo(
     () => isFormDirty(state, initialStateRef.current),
@@ -171,8 +180,6 @@ const useAJVForm = <T extends Record<string, any>>(
   const setErrors = (errors: ErrorObject[]): void => {
     setState(_setErrors(getErrors(errors, options?.userDefinedMessages)));
   };
-
-  const isValid = useMemo(() => isFormValid(state), [state]);
 
   useEffect(() => {
     if (options?.shouldDebounceAndValidate === false || !debouncedField) {

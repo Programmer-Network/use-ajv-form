@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react-hooks';
-import useAJVForm from '.';
 import { JSONSchemaType } from 'ajv';
 import { vi } from 'vitest';
+import useAJVForm from '.';
 
 // @ts-expect-error - Currently, there is no type definition for this package.
 import programmerNetworkAjv from 'programmer-network-ajv';
@@ -106,7 +106,7 @@ describe('useAJVForm', () => {
 
     result.current.reset();
 
-    expect(result.current.state.title.value).toBe('');
+    expect(result.current.state.title.value).toBe('Hello');
   });
 
   it('validates the form correctly', () => {
@@ -121,11 +121,34 @@ describe('useAJVForm', () => {
 
     const { result } = renderHook(() => useAJVForm(initialData, schema));
 
-    result.current.set({ title: '' });
+    result.current.set({ title: 'Foo' });
 
     const validation = result.current.validate();
 
     expect(validation.isValid).toBe(true);
+  });
+
+  it('isValid should be false when the initial state is set or when reset is called', () => {
+    const initialData = { title: 'Foo' };
+    const schema: JSONSchemaType<{ title: string }> = {
+      type: 'object',
+      required: ['title'],
+      properties: {
+        title: { type: 'string' },
+      },
+    };
+
+    const { result } = renderHook(() => useAJVForm(initialData, schema));
+
+    expect(result.current.validate().isValid).toBe(false);
+
+    result.current.set({ title: 'Bar' });
+
+    expect(result.current.validate().isValid).toBe(true);
+
+    result.current.reset();
+
+    expect(result.current.validate().isValid).toBe(false);
   });
 
   it('validates minLength and maxLength for title', () => {
