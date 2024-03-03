@@ -3,9 +3,7 @@ import { JSONSchemaType } from 'ajv';
 import { vi } from 'vitest';
 import useAJVForm from '.';
 
-// @ts-expect-error - Currently, there is no type definition for this package.
-import programmerNetworkAjv from 'programmer-network-ajv';
-export const { keywords } = programmerNetworkAjv;
+import { secureString, validYouTubeUrl } from '@programmer_network/ajv';
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -194,7 +192,9 @@ describe('useAJVForm', () => {
     };
 
     const { result } = renderHook(() =>
-      useAJVForm(initialData, schema, { customKeywords: [...keywords] }),
+      useAJVForm(initialData, schema, {
+        customKeywords: [secureString],
+      }),
     );
 
     result.current.set({ title: 'Hello, world ++++' });
@@ -220,7 +220,11 @@ describe('useAJVForm', () => {
       },
     };
 
-    const { result } = renderHook(() => useAJVForm(initialData, schema));
+    const { result } = renderHook(() =>
+      useAJVForm(initialData, schema, {
+        customKeywords: [validYouTubeUrl],
+      }),
+    );
 
     result.current.set({ videoURL: 'dsdsds' });
     result.current.onBlur('videoURL');
