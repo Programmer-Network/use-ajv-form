@@ -1,6 +1,6 @@
 {
   "name": "@programmer_network/use-ajv-form",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "Custom React Hook that integrates with Ajv JSON Schema Validator",
   "main": "dist/use-ajv-form.es.js",
   "author": "Aleksandar Grbic",
