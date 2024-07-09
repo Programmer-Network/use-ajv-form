@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { addUserDefinedKeywords, getErrors, getInitial, getValue } from './utils';
 import { ajv } from './utils/validation';
 
-import { ErrorObject, JSONSchemaType, KeywordDefinition } from 'ajv';
+import { ErrorObject, JSONSchemaType, KeywordDefinition, SchemaObject } from 'ajv';
 import { useDebounce } from './Hooks/useDebounce';
 import {
   AJVMessageFunction,
@@ -14,7 +14,7 @@ import {
 
 const useAJVForm = <T extends Record<string, any>>(
   initial: T,
-  schema: JSONSchemaType<T>,
+  schema: JSONSchemaType<T> | SchemaObject,
   options?: {
     customKeywords?: KeywordDefinition[];
     errors?: ErrorObject[];
