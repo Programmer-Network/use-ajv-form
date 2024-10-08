@@ -136,7 +136,7 @@ const useAJVForm = <T extends Record<string, any>>(
         return { isValid: false, data: null };
       }
 
-      if (!isFormValid(state, initialStateRef.current)) {
+      if (!isFormValid(state)) {
         return { isValid: false, data: null };
       }
 
@@ -155,21 +155,16 @@ const useAJVForm = <T extends Record<string, any>>(
     );
   };
 
-  const isFormValid = (
-    currentState: IState<T>,
-    initialState: IState<T>,
-  ): boolean => {
+  const isFormValid = (currentState: IState<T>): boolean => {
     const hasErrors = Object.keys(currentState).some(
       (key) => currentState[key].error !== '',
     );
 
-    const formIsDirty = isFormDirty(currentState, initialState);
-
-    return !hasErrors && formIsDirty;
+    return !hasErrors;
   };
 
   const isValid = useMemo(() => {
-    return isFormValid(state, initialStateRef.current);
+    return isFormValid(state);
   }, [state]);
 
   const isDirty = useMemo(
