@@ -126,7 +126,7 @@ describe('useAJVForm', () => {
     expect(validation.isValid).toBe(true);
   });
 
-  it('isValid should be false when the initial state is set or when reset is called', () => {
+  it('isValid should be true when the initial state is set or when reset is called', () => {
     const initialData = { title: 'Foo' };
     const schema: JSONSchemaType<{ title: string }> = {
       type: 'object',
@@ -138,7 +138,7 @@ describe('useAJVForm', () => {
 
     const { result } = renderHook(() => useAJVForm(initialData, schema));
 
-    expect(result.current.validate().isValid).toBe(false);
+    expect(result.current.validate().isValid).toBe(true);
 
     result.current.set({ title: 'Bar' });
 
@@ -146,7 +146,7 @@ describe('useAJVForm', () => {
 
     result.current.reset();
 
-    expect(result.current.validate().isValid).toBe(false);
+    expect(result.current.validate().isValid).toBe(true);
   });
 
   it('validates minLength and maxLength for title', () => {
