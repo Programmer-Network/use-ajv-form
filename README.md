@@ -213,6 +213,7 @@ You can customize `useAJVForm` using the following options:
 | `userDefinedMessages`       | `Record<string, AJVMessageFunction>` | Custom error messages for validation errors.                                                            |
 | `shouldDebounceAndValidate` | `boolean`                            | If `true`, enables debouncing for field validation.                                                     |
 | `debounceTime`              | `number`                             | Time in milliseconds for debouncing validation. Ignored if `shouldDebounceAndValidate` is set to false. |
+| `ajv`                       | `Ajv`                                | Your own AJV instance that might have custom keywords, errors, etc.                                     |
 
 ## Usage in Practice
 

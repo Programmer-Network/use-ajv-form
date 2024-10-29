@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import { JSONSchemaType } from 'ajv';
+import Ajv from 'ajv';
 import { vi } from 'vitest';
 import useAJVForm from '.';
 
@@ -535,5 +536,29 @@ describe('useAJVForm should properly set errors programmatically using setErrors
 
     expect(result.current.state.title.error).toBe('Monkey message');
     expect(result.current.state.description.error).toBe('Monkey message');
+  });
+
+  describe('useAJVForm should take an AJV instance via options', () => {
+    it('should validate using the provided AJV instance', () => {
+      const ajv = new Ajv();
+
+      const initialData = {
+        title: 'Hi, World',
+      };
+
+      const schema: JSONSchemaType<{ title: string }> = {
+        type: 'object',
+        required: ['title'],
+        properties: {
+          title: { type: 'string' },
+        },
+      };
+
+      const { result } = renderHook(() => useAJVForm(initialData, schema, { ajv }));
+
+      expect(result.current.state).toEqual({
+        title: { value: 'Hi, World', error: '' },
+      });
+    });
   });
 });
