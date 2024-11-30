@@ -35,7 +35,7 @@ const useAJVForm = <T extends Record<string, any>>(
     editId: number;
   } | null>(null);
   const [editCounter, setEditCounter] = useState(0);
-  const debouncedField = useDebounce(currentField, options?.debounceTime || 500);
+  const debouncedField = useDebounce(currentField, options?.debounceTime || 1000);
   const logger = useMemo(
     () => new Logger(options?.debug || false),
     [options?.debug],
@@ -222,12 +222,15 @@ const useAJVForm = <T extends Record<string, any>>(
   };
 
   useEffect(() => {
-    if (options?.shouldDebounceAndValidate === false || !debouncedField) {
+    if (
+      options?.shouldDebounceAndValidate === false ||
+      !debouncedField ||
+      !isDirty
+    ) {
       return;
     }
-
     validateField(debouncedField.name);
-  }, [debouncedField]);
+  }, [debouncedField, isDirty]);
 
   useEffect(() => {
     if (!options?.errors?.length) {
