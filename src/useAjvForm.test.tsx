@@ -1,6 +1,5 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import { JSONSchemaType } from 'ajv';
-import Ajv from 'ajv';
 import { vi } from 'vitest';
 import useAJVForm from '.';
 
