@@ -36,7 +36,6 @@ const useAJVForm = <T extends Record<string, any>>(
     [options?.debug],
   );
 
-  // Precompute field dependencies
   const fieldDependencies = useMemo(() => {
     const dependencies: Record<string, string[]> = {};
     if (schema.allOf) {
@@ -92,6 +91,7 @@ const useAJVForm = <T extends Record<string, any>>(
       : getErrors(errors, options?.userDefinedMessages, logger, schema);
 
     const error = fieldErrors[fieldName as string] || '';
+
     setState((prevState) => ({
       ...prevState,
       [fieldName]: {
@@ -121,8 +121,8 @@ const useAJVForm = <T extends Record<string, any>>(
     }, {} as T);
 
     logger.log('Validating entire form:', { data });
-    const isValid = AJVValidate(data);
 
+    const isValid = AJVValidate(data);
     if (!isValid && AJVValidate.errors) {
       logger.error('Form validation failed with errors:', AJVValidate.errors);
 
@@ -131,6 +131,7 @@ const useAJVForm = <T extends Record<string, any>>(
         options?.userDefinedMessages,
         logger,
       );
+
       setState((prevState) =>
         Object.keys(prevState).reduce((updatedState, fieldName) => {
           return {
@@ -146,7 +147,6 @@ const useAJVForm = <T extends Record<string, any>>(
       return { isValid: false, data: null };
     }
 
-    // Clear errors if valid
     setState((prevState) =>
       Object.keys(prevState).reduce((updatedState, fieldName) => {
         return {
@@ -163,17 +163,6 @@ const useAJVForm = <T extends Record<string, any>>(
     return { isValid: true, data };
   };
 
-  const isDirty = useMemo(() => {
-    return Object.keys(state).some(
-      (key) => state[key].value !== initialStateRef.current[key].value,
-    );
-  }, [state]);
-
-  const isValid = useMemo(
-    () => Object.keys(state).every((key) => !state[key].error),
-    [state],
-  );
-
   const setErrors = (errors: ErrorObject[]) => {
     const newErrors = getErrors(
       errors,
@@ -181,6 +170,7 @@ const useAJVForm = <T extends Record<string, any>>(
       logger,
       schema,
     );
+
     setState((prevState) =>
       Object.keys(newErrors).reduce((updatedState, fieldName) => {
         return {
@@ -193,6 +183,17 @@ const useAJVForm = <T extends Record<string, any>>(
       }, {} as IState<T>),
     );
   };
+
+  const isDirty = useMemo(() => {
+    return Object.keys(state).some(
+      (key) => state[key].value !== initialStateRef.current[key].value,
+    );
+  }, [state]);
+
+  const isValid = useMemo(
+    () => Object.keys(state).every((key) => !state[key].error),
+    [state],
+  );
 
   useEffect(() => {
     if (

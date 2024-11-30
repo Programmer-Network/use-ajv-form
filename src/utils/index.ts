@@ -187,7 +187,7 @@ export const addUserDefinedKeywords = (
  * @param {FormField<T>[keyof T]} value - The new value for the field.
  * @returns {IState<T>} - The updated form state.
  */
-const updateFieldValue = <T extends Record<string, any>>(
+const setFieldValue = <T extends Record<string, any>>(
   state: IState<T>,
   fieldName: keyof T,
   value: any,
@@ -211,7 +211,7 @@ const updateFieldValue = <T extends Record<string, any>>(
  * @param {SchemaObject | JSONSchemaType<T>} schema - The schema defining the dependencies and validation rules.
  * @returns {boolean} - Whether the dependent field should be required.
  */
-const evaluateFieldDependency = <T>(
+const getIsRequired = <T>(
   fieldName: keyof T,
   parentFieldName: keyof T,
   parentValue: any,
@@ -238,7 +238,7 @@ const evaluateFieldDependency = <T>(
  * @param {SchemaObject | JSONSchemaType<T>} schema - The schema defining the dependencies and validation rules.
  * @returns {IState<T>} - The updated form state.
  */
-const updateDynamicRequiredFields = <T>(
+const getIsRequiredDynamically = <T>(
   state: IState<T>,
   parentFieldName: keyof T,
   parentValue: any,
@@ -251,7 +251,7 @@ const updateDynamicRequiredFields = <T>(
     (updatedState, childFieldName) => {
       const fieldName = childFieldName as keyof T;
 
-      const isRequired = evaluateFieldDependency(
+      const isRequired = getIsRequired(
         fieldName,
         parentFieldName,
         parentValue,
@@ -290,13 +290,9 @@ export const getFormState = <T extends Record<string, any>>(
     const fieldName = key as keyof T;
     const value = getValue(form[fieldName]);
 
-    const stateWithUpdatedFieldValue = updateFieldValue(
-      updatedState,
-      fieldName,
-      value,
-    );
+    const stateWithUpdatedFieldValue = setFieldValue(updatedState, fieldName, value);
 
-    return updateDynamicRequiredFields(
+    return getIsRequiredDynamically(
       stateWithUpdatedFieldValue,
       fieldName,
       value,
