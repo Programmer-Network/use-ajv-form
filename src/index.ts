@@ -11,8 +11,7 @@ import {
   UseFormReturn,
   useFormErrors,
 } from './utils/types';
-import Logger from 'utils/Logger';
-
+import Logger from './utils/Logger';
 const useAJVForm = <T extends Record<string, any>>(
   initial: T,
   schema: JSONSchemaType<T> | SchemaObject,
@@ -27,7 +26,6 @@ const useAJVForm = <T extends Record<string, any>>(
   },
 ): UseFormReturn<T> => {
   const ajvInstance = options?.ajv || ajvInternal;
-
   const initialStateRef = useRef<IState<T>>(getInitial(initial));
 
   const [state, setState] = useState<IState<T>>(getInitial(initial));
