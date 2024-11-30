@@ -30,6 +30,7 @@ export type IState<T> = {
   [K in keyof T]: {
     value: T[K];
     error: string;
+    isRequired: boolean;
   };
 };
 
@@ -37,6 +38,7 @@ export type InitialState<T> = {
   [K in keyof T]: {
     value: T[K];
     error: string;
+    isRequired: boolean;
   };
 };
 

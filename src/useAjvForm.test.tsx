@@ -4,6 +4,7 @@ import { vi } from 'vitest';
 import useAJVForm from '.';
 
 import { secureString, validYouTubeUrl } from '@programmer_network/ajv';
+import { getFormState } from 'utils';
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -30,7 +31,7 @@ describe('useAJVForm', () => {
     const { result } = renderHook(() => useAJVForm(initialData, schema));
 
     expect(result.current.state).toEqual({
-      title: { value: 'Hi, World', error: '' },
+      title: { value: 'Hi, World', isRequired: true, error: '' },
     });
   });
 
@@ -238,19 +239,29 @@ describe('useAJVForm', () => {
       type: 'object',
       required: ['title'],
       properties: {
-        title: { type: 'string', minLength: 3 },
+        title: {
+          type: 'string',
+          minLength: 3,
+          errorMessage: 'Should be at least 3 characters long.',
+        },
       },
     };
 
-    const { result } = renderHook(() => useAJVForm(initialData, schema));
+    const { result } = renderHook(() =>
+      useAJVForm(initialData, schema, { debounceTime: 1000 }),
+    );
 
-    result.current.set({ title: 'Hi' });
+    act(() => {
+      result.current.set({ title: 'Hi' });
+    });
 
     act(() => {
       vi.advanceTimersByTime(1000);
     });
 
     expect(result.current.state.title.error).not.toBe('');
+
+    // Assert: Ensure the validation error is updated after the debounce delay
     expect(result.current.state.title.error).toBe(
       'Should be at least 3 characters long.',
     );
@@ -286,7 +297,9 @@ describe('useAJVForm', () => {
       useAJVForm(initialData, schema, { debounceTime: 1000 }),
     );
 
-    result.current.set({ title: 'Hi' });
+    act(() => {
+      result.current.set({ title: 'Hi' });
+    });
 
     act(() => {
       vi.advanceTimersByTime(1000);
@@ -826,5 +839,42 @@ describe('useAJVForm should properly set errors programmatically using setErrors
     result.current.set({ locationType: 'invalidType' }); // Invalid type
     expect(result.current.validate().isValid).toBe(false);
     expect(result.current.state.location.error).toBe(''); // Cleared since it's invalid
+  });
+
+  it('should update value and isRequired dynamically', () => {
+    const prevState = {
+      locationType: { value: 'onsite', isRequired: true, error: '' },
+      location: { value: '', isRequired: true, error: '' },
+      eventUrl: { value: '', isRequired: false, error: '' },
+    };
+
+    const form = {
+      location: '',
+      eventUrl: '',
+      locationType: 'remote',
+    };
+
+    const fieldDependencies = {
+      locationType: ['location', 'eventUrl'],
+    };
+
+    const schema = {
+      allOf: [
+        {
+          if: { properties: { locationType: { const: 'onsite' } } },
+          then: { required: ['location'] },
+        },
+        {
+          if: { properties: { locationType: { const: 'remote' } } },
+          then: { required: ['eventUrl'] },
+        },
+      ],
+    };
+
+    const result = getFormState(prevState, form, fieldDependencies, schema);
+
+    expect(result.locationType.value).toEqual('remote');
+    expect(result.location.isRequired).toEqual(false);
+    expect(result.eventUrl.isRequired).toEqual(true);
   });
 });

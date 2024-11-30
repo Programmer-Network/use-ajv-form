@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { addUserDefinedKeywords, getErrors, getInitial, getValue } from './utils';
+import {
+  addUserDefinedKeywords,
+  getErrors,
+  getFormState,
+  getInitial,
+  getValue,
+} from './utils';
 import { ajv as ajvInternal } from './utils/validation';
 
 import { ErrorObject, JSONSchemaType, KeywordDefinition, SchemaObject } from 'ajv';
 import { useDebounce } from './Hooks/useDebounce';
-import {
-  AJVMessageFunction,
-  FormField,
-  IState,
-  UseFormReturn,
-  useFormErrors,
-} from './utils/types';
+import { AJVMessageFunction, FormField, IState, UseFormReturn } from './utils/types';
 import Logger from './utils/Logger';
 const useAJVForm = <T extends Record<string, any>>(
   initial: T,
@@ -26,20 +26,44 @@ const useAJVForm = <T extends Record<string, any>>(
   },
 ): UseFormReturn<T> => {
   const ajvInstance = options?.ajv || ajvInternal;
-  const initialStateRef = useRef<IState<T>>(getInitial(initial));
 
-  const [state, setState] = useState<IState<T>>(getInitial(initial));
+  const initialStateRef = useRef<IState<T>>(
+    getInitial(initial, schema) as IState<T>,
+  );
+
+  const logger = useMemo(
+    () => new Logger(options?.debug || false),
+    [options?.debug],
+  );
+
+  // Precompute field dependencies
+  const fieldDependencies = useMemo(() => {
+    const dependencies: Record<string, string[]> = {};
+    if (schema.allOf) {
+      schema.allOf.forEach((condition: any) => {
+        if (condition.if) {
+          const parentField = Object.keys(condition.if.properties || {})[0];
+          const dependentFields = condition.then?.required || [];
+          dependencies[parentField] = [
+            ...(dependencies[parentField] || []),
+            ...dependentFields,
+          ];
+        }
+      });
+    }
+
+    logger.log('Precomputed field dependencies:', dependencies);
+    return dependencies;
+  }, [schema]);
+
+  const [state, setState] = useState<IState<T>>(initialStateRef.current);
 
   const [currentField, setCurrentField] = useState<{
     name: keyof T;
     editId: number;
   } | null>(null);
-  const [editCounter, setEditCounter] = useState(0);
+
   const debouncedField = useDebounce(currentField, options?.debounceTime || 1000);
-  const logger = useMemo(
-    () => new Logger(options?.debug || false),
-    [options?.debug],
-  );
 
   if (options?.customKeywords?.length) {
     addUserDefinedKeywords(ajvInstance, options.customKeywords);
@@ -49,13 +73,11 @@ const useAJVForm = <T extends Record<string, any>>(
 
   const resetForm = () => {
     logger.log('Form reset to initial state');
-
     setState(initialStateRef.current);
   };
 
   const validateField = (fieldName: keyof T) => {
     const fieldData = { [fieldName]: state[fieldName].value };
-
     const isValid = AJVValidate(fieldData);
     const errors = AJVValidate.errors || [];
 
@@ -70,7 +92,6 @@ const useAJVForm = <T extends Record<string, any>>(
       : getErrors(errors, options?.userDefinedMessages, logger, schema);
 
     const error = fieldErrors[fieldName as string] || '';
-
     setState((prevState) => ({
       ...prevState,
       [fieldName]: {
@@ -82,174 +103,113 @@ const useAJVForm = <T extends Record<string, any>>(
 
   const handleBlur = (fieldName: keyof T) => {
     logger.log(`Field '${String(fieldName)}' blurred`);
-
     validateField(fieldName);
   };
 
   const setFormState = (form: Partial<FormField<T>>) => {
-    setState((current) => {
-      const newState = { ...current };
-
-      Object.keys(form).forEach((key) => {
-        const name = key as keyof T;
-        newState[name] = {
-          ...newState[name],
-          value: getValue(form[name]),
-          error: newState[name]?.error || '',
-        };
-      });
-
-      setCurrentField({
-        name: Object.keys(form)[0] as keyof T,
-        editId: editCounter,
-      });
-
-      setEditCounter(editCounter + 1);
-
-      return newState;
+    setState(getFormState(state, form, fieldDependencies, schema) as IState<T>);
+    setCurrentField({
+      name: Object.keys(form)[0] as keyof T,
+      editId: currentField?.editId || 0 + 1,
     });
   };
 
-  const _setErrors = (errors: useFormErrors<T>) => {
-    return Object.keys(errors).reduce(
-      (acc, fieldName) => {
-        const key = fieldName as keyof typeof state;
-
-        return {
-          ...acc,
-          [fieldName]: {
-            value: getValue(state[key].value),
-            error: errors[fieldName] || '',
-          },
-        };
-      },
-      { ...state },
-    );
-  };
-
   const validateForm = () => {
-    try {
-      const data = Object.keys(state).reduce((acc, inputName) => {
-        return {
-          ...acc,
-          [inputName]: getValue(state[inputName].value),
-        };
-      }, {} as T);
+    const data = Object.keys(state).reduce((acc, inputName) => {
+      acc[inputName as keyof T] = getValue(state[inputName].value) as T[keyof T];
+      return acc;
+    }, {} as T);
 
-      logger.log('Validating entire form:', { data });
+    logger.log('Validating entire form:', { data });
+    const isValid = AJVValidate(data);
 
-      const isValid = AJVValidate(data);
-      if (!isValid && AJVValidate.errors) {
-        logger.error('Form validation failed with errors:', AJVValidate.errors);
+    if (!isValid && AJVValidate.errors) {
+      logger.error('Form validation failed with errors:', AJVValidate.errors);
 
-        const errors: useFormErrors<T> = getErrors(
-          AJVValidate.errors,
-          options?.userDefinedMessages,
-          logger,
-        );
-
-        setState((currentState) =>
-          Object.keys(currentState).reduce((acc, inputName) => {
-            const currentField = currentState[inputName as keyof T];
-
-            return {
-              ...acc,
-              [inputName]: {
-                ...currentField,
-                error: errors[inputName] || '',
-              },
-            };
-          }, {} as IState<T>),
-        );
-
-        return { isValid: false, data: null };
-      }
-
-      setState((currentState) =>
-        Object.keys(currentState).reduce((acc, inputName) => {
-          const currentField = currentState[inputName as keyof T];
-
+      const errors = getErrors(
+        AJVValidate.errors,
+        options?.userDefinedMessages,
+        logger,
+      );
+      setState((prevState) =>
+        Object.keys(prevState).reduce((updatedState, fieldName) => {
           return {
-            ...acc,
-            [inputName]: {
-              ...currentField,
-              error: '',
+            ...updatedState,
+            [fieldName]: {
+              ...prevState[fieldName],
+              error: errors[fieldName] || '',
             },
           };
         }, {} as IState<T>),
       );
 
-      logger.log('Form is valid:', data);
-
-      return { isValid: true, data };
-    } catch (error) {
-      logger.error('Unexpected error during form validation:', error);
-
       return { isValid: false, data: null };
     }
-  };
 
-  const isFormDirty = (
-    currentState: IState<T>,
-    initialState: IState<T>,
-  ): boolean => {
-    return Object.keys(currentState).some(
-      (key) => currentState[key].value !== initialState[key].value,
-    );
-  };
-
-  const isFormValid = (currentState: IState<T>): boolean => {
-    const hasErrors = Object.keys(currentState).some(
-      (key) => currentState[key].error !== '',
+    // Clear errors if valid
+    setState((prevState) =>
+      Object.keys(prevState).reduce((updatedState, fieldName) => {
+        return {
+          ...updatedState,
+          [fieldName]: {
+            ...prevState[fieldName],
+            error: '',
+          },
+        };
+      }, {} as IState<T>),
     );
 
-    return !hasErrors;
+    logger.log('Form is valid:', data);
+    return { isValid: true, data };
   };
 
-  const isValid = useMemo(() => {
-    return isFormValid(state);
+  const isDirty = useMemo(() => {
+    return Object.keys(state).some(
+      (key) => state[key].value !== initialStateRef.current[key].value,
+    );
   }, [state]);
 
-  const isDirty = useMemo(
-    () => isFormDirty(state, initialStateRef.current),
+  const isValid = useMemo(
+    () => Object.keys(state).every((key) => !state[key].error),
     [state],
   );
 
-  const setErrors = (errors: ErrorObject[]): void => {
-    setState(
-      _setErrors(getErrors(errors, options?.userDefinedMessages, logger, schema)),
+  const setErrors = (errors: ErrorObject[]) => {
+    const newErrors = getErrors(
+      errors,
+      options?.userDefinedMessages,
+      logger,
+      schema,
+    );
+    setState((prevState) =>
+      Object.keys(newErrors).reduce((updatedState, fieldName) => {
+        return {
+          ...updatedState,
+          [fieldName]: {
+            ...prevState[fieldName],
+            error: newErrors[fieldName] || '',
+          },
+        };
+      }, {} as IState<T>),
     );
   };
 
   useEffect(() => {
     if (
-      options?.shouldDebounceAndValidate === false ||
       !debouncedField ||
-      !isDirty
+      !isDirty ||
+      options?.shouldDebounceAndValidate === false
     ) {
       return;
     }
     validateField(debouncedField.name);
   }, [debouncedField, isDirty]);
 
-  useEffect(() => {
-    if (!options?.errors?.length) {
-      return;
-    }
-
-    setState(
-      _setErrors(
-        getErrors(options?.errors, options?.userDefinedMessages, logger, schema),
-      ),
-    );
-  }, [options?.errors]);
-
   return {
     reset: resetForm,
     set: setFormState,
     setErrors,
     validate: validateForm,
-    onBlur: handleBlur,
     isValid,
     isDirty,
     data: Object.keys(state).reduce((acc, fieldName) => {
@@ -259,6 +219,7 @@ const useAJVForm = <T extends Record<string, any>>(
       };
     }, {} as T),
     state,
+    onBlur: handleBlur,
   };
 };
 
