@@ -138,7 +138,7 @@ describe('useAJVForm', () => {
 
     const { result } = renderHook(() => useAJVForm(initialData, schema));
 
-    expect(result.current.validate().isValid).toBe(false);
+    expect(result.current.validate().isValid).toBe(true);
 
     result.current.set({ title: 'Bar' });
 
@@ -146,7 +146,7 @@ describe('useAJVForm', () => {
 
     result.current.reset();
 
-    expect(result.current.validate().isValid).toBe(false);
+    expect(result.current.validate().isValid).toBe(true);
   });
 
   it('validates minLength and maxLength for title', () => {
@@ -535,5 +535,293 @@ describe('useAJVForm should properly set errors programmatically using setErrors
 
     expect(result.current.state.title.error).toBe('Monkey message');
     expect(result.current.state.description.error).toBe('Monkey message');
+  });
+
+  it('should handle conditional validations on locationType correctly', () => {
+    /**
+     * Test Scenario:
+     * - When `locationType` is 'onsite', `location` is required.
+     * - When `locationType` is 'remote', `eventUrl` is required.
+     * - When `locationType` is 'hybrid', both `location` and `eventUrl` are required.
+     */
+    const initialData = {
+      locationType: 'onsite',
+      location: '',
+      eventUrl: '',
+    };
+
+    const schema = {
+      type: 'object',
+      required: ['locationType'],
+      properties: {
+        locationType: { type: 'string', enum: ['hybrid', 'onsite', 'remote'] },
+        location: { type: 'string' },
+        eventUrl: { type: 'string' },
+      },
+      allOf: [
+        {
+          if: { properties: { locationType: { const: 'onsite' } } },
+          then: {
+            required: ['location'],
+            properties: {
+              location: { type: 'string', minLength: 1 },
+            },
+          },
+        },
+        {
+          if: { properties: { locationType: { const: 'remote' } } },
+          then: {
+            required: ['eventUrl'],
+            properties: {
+              eventUrl: { type: 'string', format: 'uri' },
+            },
+          },
+        },
+        {
+          if: { properties: { locationType: { const: 'hybrid' } } },
+          then: {
+            required: ['location', 'eventUrl'],
+            properties: {
+              location: { type: 'string', minLength: 1 },
+              eventUrl: { type: 'string', format: 'uri' },
+            },
+          },
+        },
+      ],
+    };
+
+    const { result } = renderHook(() =>
+      useAJVForm(initialData, schema, { debug: true }),
+    );
+
+    // Validate initial state (onsite)
+    expect(result.current.validate().isValid).toBe(false); // Validation should fail
+    expect(result.current.state.location.error).toBe('This field is required.');
+    expect(result.current.state.eventUrl.error).toBe(''); // eventUrl is not required for 'onsite'
+
+    // Transition to "remote" and validate
+    result.current.set({ locationType: 'remote', eventUrl: '' });
+    expect(result.current.validate().isValid).toBe(false); // Validation should fail for remote
+    expect(result.current.state.location.error).toBe(''); // location is no longer required
+    expect(result.current.state.eventUrl.error).toBe('Should be in uri format.'); // eventUrl now required
+
+    // Add valid eventUrl for remote
+    result.current.set({ eventUrl: 'https://example.com' });
+    expect(result.current.validate().isValid).toBe(true); // Validation should now pass
+
+    // // Transition to "hybrid" and validate
+    result.current.set({ locationType: 'hybrid', location: '', eventUrl: '' });
+    expect(result.current.validate().isValid).toBe(false); // Validation should fail for hybrid
+    expect(result.current.state.location.error).toBe('This field is required.');
+    expect(result.current.state.eventUrl.error).toBe('Should be in uri format.');
+
+    result.current.set({
+      location: 'Some Location',
+      eventUrl: 'https://example.com',
+    });
+
+    expect(result.current.validate().isValid).toBe(true); // Validation should pass now
+  });
+
+  it('should clear errors when switching between different locationType values', () => {
+    const initialData = {
+      locationType: 'onsite',
+      location: '',
+      eventUrl: '',
+    };
+
+    const schema = {
+      type: 'object',
+      required: ['locationType'],
+      properties: {
+        locationType: { type: 'string', enum: ['hybrid', 'onsite', 'remote'] },
+        location: { type: 'string' },
+        eventUrl: { type: 'string' },
+      },
+      allOf: [
+        {
+          if: { properties: { locationType: { const: 'onsite' } } },
+          then: {
+            required: ['location'],
+            properties: {
+              location: { type: 'string', minLength: 1 },
+            },
+          },
+        },
+        {
+          if: { properties: { locationType: { const: 'remote' } } },
+          then: {
+            required: ['eventUrl'],
+            properties: {
+              eventUrl: { type: 'string', format: 'uri' },
+            },
+          },
+        },
+        {
+          if: { properties: { locationType: { const: 'hybrid' } } },
+          then: {
+            required: ['location', 'eventUrl'],
+            properties: {
+              location: { type: 'string', minLength: 1 },
+              eventUrl: { type: 'string', format: 'uri' },
+            },
+          },
+        },
+      ],
+    };
+
+    const { result } = renderHook(() =>
+      useAJVForm(initialData, schema, { debug: true }),
+    );
+
+    // Initially, locationType is 'onsite', location is required
+    expect(result.current.validate().isValid).toBe(false);
+    expect(result.current.state.location.error).toBe('This field is required.');
+    expect(result.current.state.eventUrl.error).toBe(''); // Not required for 'onsite'
+
+    // Transition to remote => location error should clear; eventUrl is now required
+    result.current.set({ locationType: 'remote' });
+    expect(result.current.validate().isValid).toBe(false);
+    expect(result.current.state.location.error).toBe(''); // Not required anymore
+    expect(result.current.state.eventUrl.error).toBe('Should be in uri format.');
+
+    // Transition to hybrid => both fields are now required
+    result.current.set({ locationType: 'hybrid' });
+    expect(result.current.validate().isValid).toBe(false);
+    expect(result.current.state.location.error).toBe('This field is required.');
+    expect(result.current.state.eventUrl.error).toBe('Should be in uri format.');
+
+    // Transition back to onsite => location required, eventUrl clears
+    result.current.set({ locationType: 'onsite', eventUrl: '' });
+    expect(result.current.validate().isValid).toBe(false);
+    expect(result.current.state.location.error).toBe('This field is required.');
+    expect(result.current.state.eventUrl.error).toBe(''); // Cleared
+  });
+
+  it('should validate non-conditional fields alongside conditional fields', () => {
+    const initialData = {
+      locationType: 'onsite',
+      location: '',
+      eventUrl: '',
+      title: '',
+    };
+
+    const schema = {
+      type: 'object',
+      required: ['locationType', 'title'],
+      properties: {
+        locationType: { type: 'string', enum: ['hybrid', 'onsite', 'remote'] },
+        location: { type: 'string' },
+        eventUrl: { type: 'string' },
+        title: { type: 'string', minLength: 3 },
+      },
+      allOf: [
+        {
+          if: { properties: { locationType: { const: 'onsite' } } },
+          then: {
+            required: ['location'],
+            properties: {
+              location: { type: 'string', minLength: 1 },
+            },
+          },
+        },
+        {
+          if: { properties: { locationType: { const: 'remote' } } },
+          then: {
+            required: ['eventUrl'],
+            properties: {
+              eventUrl: { type: 'string', format: 'uri' },
+            },
+          },
+        },
+      ],
+    };
+
+    const { result } = renderHook(() =>
+      useAJVForm(initialData, schema, { debug: true }),
+    );
+
+    // Initially, title and location should fail
+    expect(result.current.validate().isValid).toBe(false);
+    expect(result.current.state.title.error).toBe(
+      'Should be at least 3 characters long.',
+    );
+    expect(result.current.state.location.error).toBe('This field is required.');
+    expect(result.current.state.eventUrl.error).toBe(''); // Not required for 'onsite'
+
+    // Set valid title
+    result.current.set({ title: 'My Event' });
+    expect(result.current.validate().isValid).toBe(false); // Still invalid because of location
+    expect(result.current.state.title.error).toBe(''); // Cleared
+    expect(result.current.state.location.error).toBe('This field is required.');
+
+    // Fix location
+    result.current.set({ location: 'Some Location' });
+    expect(result.current.validate().isValid).toBe(true); // Everything valid now
+
+    // Transition to remote => validation should update
+    result.current.set({ locationType: 'remote', eventUrl: '' });
+    expect(result.current.validate().isValid).toBe(false);
+    expect(result.current.state.eventUrl.error).toBe('Should be in uri format.');
+    expect(result.current.state.location.error).toBe(''); // No longer required
+  });
+
+  it('should handle invalid or missing locationType gracefully', () => {
+    const initialData = {
+      locationType: '', // Invalid value
+      location: '',
+      eventUrl: '',
+    };
+
+    const schema = {
+      type: 'object',
+      required: ['locationType'],
+      properties: {
+        locationType: { type: 'string', enum: ['hybrid', 'onsite', 'remote'] },
+        location: { type: 'string' },
+        eventUrl: { type: 'string' },
+      },
+      allOf: [
+        {
+          if: { properties: { locationType: { const: 'onsite' } } },
+          then: {
+            required: ['location'],
+            properties: {
+              location: { type: 'string', minLength: 1 },
+            },
+          },
+        },
+        {
+          if: { properties: { locationType: { const: 'remote' } } },
+          then: {
+            required: ['eventUrl'],
+            properties: {
+              eventUrl: { type: 'string', format: 'uri' },
+            },
+          },
+        },
+      ],
+    };
+
+    const { result } = renderHook(() =>
+      useAJVForm(initialData, schema, { debug: true }),
+    );
+
+    // Invalid locationType should not enforce any conditional requirements
+    expect(result.current.validate().isValid).toBe(false);
+    expect(result.current.state.locationType.error).toBe(
+      'hybrid, onsite, remote are the only allowed values.',
+    );
+    expect(result.current.state.location.error).toBe(''); // No requirement enforced
+    expect(result.current.state.eventUrl.error).toBe('');
+
+    // Set valid locationType and verify behavior
+    result.current.set({ locationType: 'onsite' });
+    expect(result.current.validate().isValid).toBe(false); // Still fails due to location
+    expect(result.current.state.location.error).toBe('This field is required.');
+
+    result.current.set({ locationType: 'invalidType' }); // Invalid type
+    expect(result.current.validate().isValid).toBe(false);
+    expect(result.current.state.location.error).toBe(''); // Cleared since it's invalid
   });
 });

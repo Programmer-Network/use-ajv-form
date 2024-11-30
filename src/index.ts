@@ -11,6 +11,7 @@ import {
   UseFormReturn,
   useFormErrors,
 } from './utils/types';
+import Logger from 'utils/Logger';
 
 const useAJVForm = <T extends Record<string, any>>(
   initial: T,
@@ -21,6 +22,7 @@ const useAJVForm = <T extends Record<string, any>>(
     userDefinedMessages?: Record<string, AJVMessageFunction>;
     shouldDebounceAndValidate?: boolean;
     debounceTime?: number;
+    debug?: boolean;
   },
 ): UseFormReturn<T> => {
   const initialStateRef = useRef<IState<T>>(getInitial(initial));
@@ -33,6 +35,10 @@ const useAJVForm = <T extends Record<string, any>>(
   } | null>(null);
   const [editCounter, setEditCounter] = useState(0);
   const debouncedField = useDebounce(currentField, options?.debounceTime || 500);
+  const logger = useMemo(
+    () => new Logger(options?.debug || false),
+    [options?.debug],
+  );
 
   if (options?.customKeywords?.length) {
     addUserDefinedKeywords(ajv, options.customKeywords);
@@ -41,17 +47,28 @@ const useAJVForm = <T extends Record<string, any>>(
   const AJVValidate = ajv.compile(schema);
 
   const resetForm = () => {
+    logger.log('Form reset to initial state');
+
     setState(initialStateRef.current);
   };
 
   const validateField = (fieldName: keyof T) => {
-    const isValid = AJVValidate({ [fieldName]: state[fieldName].value });
+    const fieldData = { [fieldName]: state[fieldName].value };
+
+    const isValid = AJVValidate(fieldData);
     const errors = AJVValidate.errors || [];
+
+    logger.log(`Validating field '${String(fieldName)}':`, {
+      fieldData,
+      isValid,
+      errors,
+    });
+
     const fieldErrors = isValid
       ? {}
-      : getErrors(errors, options?.userDefinedMessages);
+      : getErrors(errors, options?.userDefinedMessages, logger, schema);
 
-    const error = isDirty ? fieldErrors[fieldName as string] || '' : '';
+    const error = fieldErrors[fieldName as string] || '';
 
     setState((prevState) => ({
       ...prevState,
@@ -63,6 +80,8 @@ const useAJVForm = <T extends Record<string, any>>(
   };
 
   const handleBlur = (fieldName: keyof T) => {
+    logger.log(`Field '${String(fieldName)}' blurred`);
+
     validateField(fieldName);
   };
 
@@ -116,32 +135,55 @@ const useAJVForm = <T extends Record<string, any>>(
         };
       }, {} as T);
 
-      if (!AJVValidate(data) && AJVValidate.errors) {
+      logger.log('Validating entire form:', { data });
+
+      const isValid = AJVValidate(data);
+      if (!isValid && AJVValidate.errors) {
+        logger.error('Form validation failed with errors:', AJVValidate.errors);
+
         const errors: useFormErrors<T> = getErrors(
           AJVValidate.errors,
           options?.userDefinedMessages,
+          logger,
         );
 
-        setState(
-          _setErrors(
-            Object.keys(errors).reduce((acc, fieldName) => {
-              return {
-                ...acc,
-                [fieldName]: getValue(errors[fieldName]),
-              };
-            }, {}),
-          ),
+        setState((currentState) =>
+          Object.keys(currentState).reduce((acc, inputName) => {
+            const currentField = currentState[inputName as keyof T];
+
+            return {
+              ...acc,
+              [inputName]: {
+                ...currentField,
+                error: errors[inputName] || '',
+              },
+            };
+          }, {} as IState<T>),
         );
 
         return { isValid: false, data: null };
       }
 
-      if (!isFormValid(state, initialStateRef.current)) {
-        return { isValid: false, data: null };
-      }
+      setState((currentState) =>
+        Object.keys(currentState).reduce((acc, inputName) => {
+          const currentField = currentState[inputName as keyof T];
+
+          return {
+            ...acc,
+            [inputName]: {
+              ...currentField,
+              error: '',
+            },
+          };
+        }, {} as IState<T>),
+      );
+
+      logger.log('Form is valid:', data);
 
       return { isValid: true, data };
     } catch (error) {
+      logger.error('Unexpected error during form validation:', error);
+
       return { isValid: false, data: null };
     }
   };
@@ -155,21 +197,16 @@ const useAJVForm = <T extends Record<string, any>>(
     );
   };
 
-  const isFormValid = (
-    currentState: IState<T>,
-    initialState: IState<T>,
-  ): boolean => {
+  const isFormValid = (currentState: IState<T>): boolean => {
     const hasErrors = Object.keys(currentState).some(
       (key) => currentState[key].error !== '',
     );
 
-    const formIsDirty = isFormDirty(currentState, initialState);
-
-    return !hasErrors && formIsDirty;
+    return !hasErrors;
   };
 
   const isValid = useMemo(() => {
-    return isFormValid(state, initialStateRef.current);
+    return isFormValid(state);
   }, [state]);
 
   const isDirty = useMemo(
@@ -178,7 +215,9 @@ const useAJVForm = <T extends Record<string, any>>(
   );
 
   const setErrors = (errors: ErrorObject[]): void => {
-    setState(_setErrors(getErrors(errors, options?.userDefinedMessages)));
+    setState(
+      _setErrors(getErrors(errors, options?.userDefinedMessages, logger, schema)),
+    );
   };
 
   useEffect(() => {
@@ -194,7 +233,11 @@ const useAJVForm = <T extends Record<string, any>>(
       return;
     }
 
-    setState(_setErrors(getErrors(options?.errors, options?.userDefinedMessages)));
+    setState(
+      _setErrors(
+        getErrors(options?.errors, options?.userDefinedMessages, logger, schema),
+      ),
+    );
   }, [options?.errors]);
 
   return {

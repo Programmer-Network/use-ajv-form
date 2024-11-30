@@ -1,9 +1,14 @@
-import Ajv, { ErrorObject, KeywordDefinition } from 'ajv';
+import Ajv, {
+  ErrorObject,
+  JSONSchemaType,
+  KeywordDefinition,
+  SchemaObject,
+} from 'ajv';
 
 import { AJVMessageFunction, InitialState, useFormErrors } from './types';
 
-// import { DefaultAJVMessages } from './types';
 import { defaultAJVMessages } from './constants';
+import Logger from './Logger';
 
 const getFieldName = (instancePath: string): string | null => {
   if (!instancePath) {
@@ -36,16 +41,95 @@ const getErrorMessage = (
   }
 };
 
+const resolveConditionalField = (
+  schemaPath: string,
+  schema: any, // JSONSchemaType<T> or SchemaObject
+  logger?: Logger,
+): string | null => {
+  if (!schemaPath || !schema) return null;
+
+  // Remove JSON Pointer prefix '#/' and split into parts
+  const pathParts = schemaPath.replace(/^#\//, '').split('/');
+
+  // Traverse the schema to locate the failing node
+  let current: any = schema;
+  for (const key of pathParts) {
+    if (!current[key]) {
+      logger?.log(`Failed to traverse schema path: ${schemaPath}`, {
+        current,
+        key,
+      });
+      return null; // Failed to traverse
+    }
+    current = current[key];
+  }
+
+  // Special handling for "if" schema failure
+  const match = /allOf\/(\d+)\/if/.exec(schemaPath); // Extract 'allOf' block
+  if (match) {
+    const index = parseInt(match[1], 10); // Get the index of the allOf clause
+
+    // Access the parent "allOf" clause
+    const allOfBlock = schema.allOf?.[index];
+    if (allOfBlock?.then) {
+      // Check for "required" fields in the "then" clause
+      if (allOfBlock.then.required && allOfBlock.then.required.length > 0) {
+        const resolvedField = allOfBlock.then.required[0]; // First required field
+        logger?.log(`Resolved "if/then" error to required field: ${resolvedField}`);
+        return resolvedField;
+      }
+
+      // Fallback: Look for properties defined in the "then"
+      const propertyKeys = Object.keys(allOfBlock.then.properties || {});
+      if (propertyKeys.length > 0) {
+        const resolvedProperty = propertyKeys[0];
+        logger?.log(
+          `Resolved field using fallback in "then.properties": ${resolvedProperty}`,
+        );
+        return resolvedProperty; // Fallback to the first property key
+      }
+    } else {
+      logger?.log(`Error: 'then' clause missing in schema for path: ${schemaPath}`);
+    }
+  }
+
+  logger?.log(`Failed to resolve any field for path: ${schemaPath}`);
+  return null; // Could not resolve a field
+};
+
 export const getErrors = <T extends Record<string, any>>(
   ajvErrors: ErrorObject[],
   userDefinedMessages?: Record<string, AJVMessageFunction>,
+  logger?: Logger,
+  schema?: JSONSchemaType<T> | SchemaObject,
 ): useFormErrors<T> => {
+  const seenFields = new Set<string>(); // Track field-level errors
+
   return ajvErrors.reduce((acc, current) => {
-    const fieldName: string | null = getFieldName(current?.instancePath);
+    // Try resolving the field from instancePath or schemaPath
+    let fieldName = getFieldName(current?.instancePath);
+
+    if (!fieldName && schema && current.schemaPath.includes('/if')) {
+      // Resolve conditional "if" errors to corresponding fields
+      fieldName = resolveConditionalField(current.schemaPath, schema, logger);
+    }
+
     if (!fieldName) {
+      // Log skipped errors for debugging
+      logger?.log('Skipping unresolved error:', current);
       return acc;
     }
 
+    if (seenFields.has(fieldName) && current.schemaPath.includes('/if')) {
+      // Skip reporting "if" errors if we already have field-level errors
+      logger?.log(`Skipping redundant "if" error for field: ${fieldName}`, current);
+      return acc;
+    }
+
+    // Mark this field as having an error
+    seenFields.add(fieldName);
+
+    // Map resolved field name to its error message
     return {
       ...acc,
       [fieldName]: getErrorMessage(current, userDefinedMessages),
