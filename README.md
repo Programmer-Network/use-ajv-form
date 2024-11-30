@@ -214,6 +214,7 @@ You can customize `useAJVForm` using the following options:
 | `shouldDebounceAndValidate` | `boolean`                            | If `true`, enables debouncing for field validation.                                                     |
 | `debounceTime`              | `number`                             | Time in milliseconds for debouncing validation. Ignored if `shouldDebounceAndValidate` is set to false. |
 | `ajv`                       | `Ajv`                                | Your own AJV instance that might have custom keywords, errors, etc.                                     |
+| `debug`                     | `boolean`                            | Enables the logging and helps with debugging                                                            |
 
 ## Usage in Practice
 
