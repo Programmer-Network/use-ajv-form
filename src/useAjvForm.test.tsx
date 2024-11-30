@@ -247,10 +247,13 @@ describe('useAJVForm', () => {
     result.current.set({ title: 'Hi' });
 
     act(() => {
-      vi.advanceTimersByTime(500);
+      vi.advanceTimersByTime(1000);
     });
 
     expect(result.current.state.title.error).not.toBe('');
+    expect(result.current.state.title.error).toBe(
+      'Should be at least 3 characters long.',
+    );
   });
 
   it('should not validate and debounce if shouldDebounceAndValidate is set to false', async () => {
