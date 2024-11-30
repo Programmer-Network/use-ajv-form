@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@testing-library/react-hooks':
         specifier: ^8.0.1
-        version: 8.0.1(@types/react@18.2.37)
+        version: 8.0.1(@types/react@18.2.37)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       ajv:
         specifier: '>= 8.13.0'
         version: 8.13.0
@@ -35,7 +35,7 @@ importers:
         version: 6.6.3
       '@testing-library/react':
         specifier: 16.0.1
-        version: 16.0.1(@testing-library/dom@9.3.4)(@types/react-dom@18.2.15)(@types/react@18.2.37)
+        version: 16.0.1(@testing-library/dom@9.3.4)(@types/react-dom@18.2.15)(@types/react@18.2.37)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@testing-library/user-event':
         specifier: ^14.5.2
         version: 14.5.2(@testing-library/dom@9.3.4)
@@ -2836,17 +2836,21 @@ snapshots:
       lodash: 4.17.21
       redent: 3.0.0
 
-  '@testing-library/react-hooks@8.0.1(@types/react@18.2.37)':
+  '@testing-library/react-hooks@8.0.1(@types/react@18.2.37)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@babel/runtime': 7.24.0
-      react-error-boundary: 3.1.4
+      react: 18.2.0
+      react-error-boundary: 3.1.4(react@18.2.0)
     optionalDependencies:
       '@types/react': 18.2.37
+      react-dom: 18.2.0(react@18.2.0)
 
-  '@testing-library/react@16.0.1(@testing-library/dom@9.3.4)(@types/react-dom@18.2.15)(@types/react@18.2.37)':
+  '@testing-library/react@16.0.1(@testing-library/dom@9.3.4)(@types/react-dom@18.2.15)(@types/react@18.2.37)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@babel/runtime': 7.24.0
       '@testing-library/dom': 9.3.4
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
     optionalDependencies:
       '@types/react': 18.2.37
       '@types/react-dom': 18.2.15
@@ -4361,9 +4365,10 @@ snapshots:
       react: 18.2.0
       scheduler: 0.23.0
 
-  react-error-boundary@3.1.4:
+  react-error-boundary@3.1.4(react@18.2.0):
     dependencies:
       '@babel/runtime': 7.24.0
+      react: 18.2.0
 
   react-is@16.13.1: {}
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { addUserDefinedKeywords, getErrors, getInitial, getValue } from './utils';
-import { ajv } from './utils/validation';
+import { ajv as ajvInternal } from './utils/validation';
 
 import { ErrorObject, JSONSchemaType, KeywordDefinition, SchemaObject } from 'ajv';
 import { useDebounce } from './Hooks/useDebounce';
@@ -17,6 +17,7 @@ const useAJVForm = <T extends Record<string, any>>(
   initial: T,
   schema: JSONSchemaType<T> | SchemaObject,
   options?: {
+    ajv?: typeof ajvInternal;
     customKeywords?: KeywordDefinition[];
     errors?: ErrorObject[];
     userDefinedMessages?: Record<string, AJVMessageFunction>;
@@ -25,6 +26,8 @@ const useAJVForm = <T extends Record<string, any>>(
     debug?: boolean;
   },
 ): UseFormReturn<T> => {
+  const ajvInstance = options?.ajv || ajvInternal;
+
   const initialStateRef = useRef<IState<T>>(getInitial(initial));
 
   const [state, setState] = useState<IState<T>>(getInitial(initial));
@@ -41,10 +44,10 @@ const useAJVForm = <T extends Record<string, any>>(
   );
 
   if (options?.customKeywords?.length) {
-    addUserDefinedKeywords(ajv, options.customKeywords);
+    addUserDefinedKeywords(ajvInstance, options.customKeywords);
   }
 
-  const AJVValidate = ajv.compile(schema);
+  const AJVValidate = ajvInstance.compile(schema);
 
   const resetForm = () => {
     logger.log('Form reset to initial state');

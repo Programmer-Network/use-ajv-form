@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react-hooks';
 import { JSONSchemaType } from 'ajv';
+import Ajv from 'ajv';
 import { vi } from 'vitest';
 import useAJVForm from '.';
 
@@ -126,7 +127,7 @@ describe('useAJVForm', () => {
     expect(validation.isValid).toBe(true);
   });
 
-  it('isValid should be false when the initial state is set or when reset is called', () => {
+  it('isValid should be true when the initial state is set or when reset is called', () => {
     const initialData = { title: 'Foo' };
     const schema: JSONSchemaType<{ title: string }> = {
       type: 'object',
