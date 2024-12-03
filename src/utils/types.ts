@@ -42,15 +42,21 @@ export type InitialState<T> = {
   };
 };
 
-export type ValidateResult<T> = {
-  isValid: boolean;
-  data: T | null;
-  errors?: Partial<{ [K in keyof T]: T[K] }>;
-};
+export type ValidateResult<T> =
+  | {
+      isValid: true;
+      data: T;
+    }
+  | {
+      isValid: false;
+      data: null;
+      errors?: Partial<{ [K in keyof T]: T[K] }>;
+    };
 
 export type useFormErrors<T> = {
   [K in keyof T]?: string;
 };
+
 export interface UseFormReturn<T> {
   data: T;
   state: IState<T>;
