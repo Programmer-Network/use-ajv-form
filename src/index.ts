@@ -10,8 +10,15 @@ import { ajv as ajvInternal } from './utils/validation';
 
 import { ErrorObject, JSONSchemaType, KeywordDefinition, SchemaObject } from 'ajv';
 import { useDebounce } from './Hooks/useDebounce';
-import { AJVMessageFunction, FormField, IState, UseFormReturn } from './utils/types';
+import {
+  AJVMessageFunction,
+  FormField,
+  IState,
+  UseFormReturn,
+  ValidateResult,
+} from './utils/types';
 import Logger from './utils/Logger';
+
 const useAJVForm = <T extends Record<string, any>>(
   initial: T,
   schema: JSONSchemaType<T> | SchemaObject,
@@ -114,7 +121,7 @@ const useAJVForm = <T extends Record<string, any>>(
     });
   };
 
-  const validateForm = () => {
+  const validateForm = (): ValidateResult<T> => {
     const data = Object.keys(state).reduce((acc, inputName) => {
       acc[inputName as keyof T] = getValue(state[inputName].value) as T[keyof T];
       return acc;
