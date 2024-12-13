@@ -52,6 +52,39 @@ describe('useAJVForm', () => {
     expect(result.current.state.title.value).toBe('New Title');
   });
 
+  it('handles onChange with fields not in initial data', () => {
+    const initialData = { name: '' };
+    const schema: JSONSchemaType<{ name: string }> = {
+      type: 'object',
+      required: ['name'],
+      properties: {
+        name: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 65,
+          errorMessage: {
+            maxLength: 'Name cannot be greater than 65 characters.',
+          },
+        },
+      },
+    };
+
+    const { result } = renderHook(() => useAJVForm(initialData, schema));
+
+    // Accidentally including an additional field in update
+    const payload = { name: 'Dog', id: 1 };
+    result.current.set(payload);
+
+    expect(result.current.state.name.value).toBe('Dog');
+    expect(result.current.isDirty).toBeTruthy();
+
+    // Clearing existing field has earlier caused hook to throw
+    result.current.set({ name: '' });
+
+    expect(result.current.state.name.value).toBe('');
+    expect(result.current.isDirty).toBeTruthy();
+  });
+
   it('handles onBlur event with validation correctly', () => {
     const initialData = { title: '' };
     const schema: JSONSchemaType<{ title: string }> = {
