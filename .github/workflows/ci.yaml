@@ -1,0 +1,98 @@
+name: Continuous Integration and Deployment
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  deployments: write
+  packages: write
+  checks: write
+  statuses: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js and cache PNPM dependencies
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.8"
+          cache: pnpm
+
+      - name: Install PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install Dependencies
+        run: pnpm install
+        env:
+          CI: true
+
+      - name: Run Linting
+        run: pnpm lint:ci
+
+      - name: Run Type Check
+        run: pnpm types:check
+
+      - name: Run Tests
+        run: pnpm test:ci
+
+  publish-npm:
+    needs: [lint-and-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js and cache PNPM dependencies
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.8"
+          registry-url: "https://registry.npmjs.org"
+          scope: "@programmer_network"
+          cache: pnpm
+
+      - name: Install PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install Dependencies
+        run: pnpm install
+        env:
+          CI: true
+
+      - name: Build the Code
+        run: pnpm build
+
+      - name: Verify NPM_TOKEN is set
+        run: |
+          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
+            echo "NPM_TOKEN secret is not set! Failing the build."
+            exit 1
+          fi
+
+      - name: Set up Git Identity
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Create Release Draft
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+
+      - name: Publish to NPM
+        run: pnpm publish --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
