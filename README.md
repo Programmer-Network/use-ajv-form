@@ -316,3 +316,22 @@ Then update your `package.json` scripts:
   "dev:with-local-ajv": "cross-env USE_LOCAL_AJV=true vite"
 }
 ```
+
+Here's a slightly improved version of your deployment instructions, which clarifies the steps and ensures consistency:
+
+---
+
+## Deployment Instructions
+
+To deploy a new version and publish it to npm, follow these steps:
+
+1. Check the current version in `package.json`.
+
+2. Create a new tag that is one version higher than the version specified in `package.json`, following semantic versioning (e.g., `v1.0.1` → `v1.0.2`).
+
+3. Push the new tag to the remote Git repository.
+
+```bash
+git tag vX.X.X 
+git push origin vX.X.X
+```
