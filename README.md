@@ -1,6 +1,6 @@
 # useAjvForm
 
-[![lint-and-test-pr](https://github.com/Programmer-Network/use-ajv-form/actions/workflows/lint-and-test.yaml/badge.svg)](https://github.com/Programmer-Network/use-ajv-form/actions/workflows/lint-and-test.yaml)
+[![lint-and-test-pr](https://github.com/Programmer-Network/use-ajv-form/actions/workflows/ci.yaml/badge.svg)](https://github.com/Programmer-Network/use-ajv-form/actions/workflows/ci.yaml)
 
 <p align="center" style="width:300px; margin: auto;">
   <img src="./assets/ajv-react.png" alt="AJV React Logo">

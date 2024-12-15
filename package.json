@@ -1,6 +1,6 @@
 {
   "name": "@programmer_network/use-ajv-form",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "description": "Custom React Hook that integrates with Ajv JSON Schema Validator",
   "main": "dist/use-ajv-form.es.js",
   "author": "Aleksandar Grbic",
@@ -22,8 +22,7 @@
     "lint:fix": "eslint --cache --fix src",
     "lint:quiet": "eslint --cache --quiet src",
     "test:ci": "vitest",
-    "types:check": "tsc",
-    "publish": "npm publish --auth-type=legacy"
+    "types:check": "tsc"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix",
