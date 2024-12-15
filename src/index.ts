@@ -193,7 +193,7 @@ const useAJVForm = <T extends Record<string, any>>(
 
   const isDirty = useMemo(() => {
     return Object.keys(state).some(
-      (key) => state[key].value !== initialStateRef.current[key].value,
+      (key) => state[key].value !== initialStateRef.current[key]?.value,
     );
   }, [state]);
 
