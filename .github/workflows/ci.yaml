@@ -21,16 +21,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
       - name: Setup Node.js and cache PNPM dependencies
         uses: actions/setup-node@v3
         with:
           node-version: "20.8"
           cache: pnpm
-
-      - name: Install PNPM
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
 
       - name: Install Dependencies
         run: pnpm install
