@@ -1,6 +1,6 @@
 {
   "name": "@programmer_network/use-ajv-form",
-  "version": "1.0.31",
+  "version": "1.0.29",
   "description": "Custom React Hook that integrates with Ajv JSON Schema Validator",
   "main": "dist/use-ajv-form.es.js",
   "author": "Aleksandar Grbic",
@@ -47,13 +47,14 @@
     "ajv": ">= 8.13.0",
     "ajv-errors": ">= 3.0.0",
     "ajv-formats": ">= 2.1.1",
-    "react": ">= 18.2.0",
-    "react-dom": ">= 18.2.0"
+    "react": ">=18.2.0 <20.0.0",
+    "react-dom": ">=18.2.0 <20.0.0"
   },
   "devDependencies": {
     "@programmer_network/ajv": "1.0.2",
-    "@testing-library/jest-dom": "6.6.3",
-    "@testing-library/react": "16.0.1",
+    "@testing-library/jest-dom": "6.1.4",
+    "@testing-library/react": "14.1.2",
+    "@testing-library/react-hooks": "8.0.1",
     "@testing-library/user-event": "^14.5.2",
     "@types/ajv": "1.0.0",
     "@types/jest": "29.5.10",
@@ -71,7 +72,8 @@
     "husky": "8.0.3",
     "jsdom": "22.1.0",
     "prettier": "3.0.3",
-    "react-hooks": "link:@types/@testing-library/react-hooks",
+    "react": "18",
+    "react-dom": "18",
     "typescript": "5.2.2",
     "vite": "5.0.2",
     "vite-plugin-dts": "3.6.3",
@@ -89,8 +91,5 @@
     "json schema validation",
     "use-ajv-form",
     "react form validation"
-  ],
-  "dependencies": {
-    "@testing-library/react-hooks": "^8.0.1"
-  }
+  ]
 }
