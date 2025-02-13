@@ -911,3 +911,65 @@ describe('useAJVForm should properly set errors programmatically using setErrors
     expect(result.eventUrl.isRequired).toEqual(true);
   });
 });
+
+describe('useAJVForm with error handling', () => {
+  it('should set initial errors from options', () => {
+    const initialData = { title: '' };
+    const schema: JSONSchemaType<{ title: string }> = {
+      type: 'object',
+      required: ['title'],
+      properties: {
+        title: { type: 'string' },
+      },
+    };
+
+    const errors = [
+      {
+        instancePath: '/title',
+        keyword: 'required',
+        params: { missingProperty: 'title' },
+        schemaPath: '#/required',
+      },
+    ];
+
+    const { result } = renderHook(() => useAJVForm(initialData, schema, { errors }));
+
+    expect(result.current.state.title.error).toBe('title is required.');
+    expect(result.current.isValid).toBe(false);
+  });
+
+  it('should update errors when options.errors changes', () => {
+    const initialData = { title: '' };
+    const schema: JSONSchemaType<{ title: string }> = {
+      type: 'object',
+      required: ['title'],
+      properties: {
+        title: { type: 'string' },
+      },
+    };
+
+    const { result, rerender } = renderHook(
+      (props) => useAJVForm(initialData, schema, props),
+      { initialProps: {} },
+    );
+
+    expect(result.current.state.title.error).toBe('');
+
+    rerender({
+      errors: [
+        {
+          instancePath: '/title',
+          keyword: 'minLength',
+          params: { limit: 3 },
+          schemaPath: '#/properties/title/minLength',
+        },
+      ],
+    });
+
+    expect(result.current.state.title.error).toBe(
+      'Should be at least 3 characters long.',
+    );
+
+    expect(result.current.isValid).toBe(false);
+  });
+});

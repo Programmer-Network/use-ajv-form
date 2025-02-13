@@ -203,6 +203,27 @@ const useAJVForm = <T extends Record<string, any>>(
   );
 
   useEffect(() => {
+    if (!options?.errors || !options.errors.length) {
+      return;
+    }
+
+    setState((prevState) => {
+      const errors = getErrors(options.errors as ErrorObject[]);
+
+      return Object.keys(errors).reduce(
+        (updatedState, key) => ({
+          ...updatedState,
+          [key]: {
+            ...prevState[key],
+            error: errors[key],
+          },
+        }),
+        { ...prevState } as IState<T>,
+      );
+    });
+  }, [options?.errors]);
+
+  useEffect(() => {
     if (
       !debouncedField ||
       !isDirty ||
