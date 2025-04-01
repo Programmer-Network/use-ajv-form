@@ -3,7 +3,7 @@ name: Continuous Integration and Deployment
 on:
   push:
     tags:
-      - "v*"
+      - 'v*'
 
 permissions:
   contents: write
@@ -29,7 +29,7 @@ jobs:
       - name: Setup Node.js and cache PNPM dependencies
         uses: actions/setup-node@v3
         with:
-          node-version: "20.8"
+          node-version: '20.8'
           cache: pnpm
 
       - name: Install Dependencies
@@ -61,9 +61,9 @@ jobs:
       - name: Setup Node.js and cache PNPM dependencies
         uses: actions/setup-node@v3
         with:
-          node-version: "20.8"
-          registry-url: "https://registry.npmjs.org"
-          scope: "@programmer_network"
+          node-version: '20.8'
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@programmer_network'
           cache: pnpm
 
       - name: Install Dependencies
@@ -87,9 +87,9 @@ jobs:
           git config --global user.email "actions@github.com"
 
       - name: Create Release Draft
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: 'marvinpinto/action-automatic-releases@latest'
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          repo_token: '${{ secrets.GITHUB_TOKEN }}'
           prerelease: false
 
       - name: Publish to NPM

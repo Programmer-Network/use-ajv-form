@@ -221,7 +221,6 @@ You can customize `useAJVForm` using the following options:
 
 To see `useAJVForm` in action, visit our [Yail Storybook](https://yail.programmer.network/?path=/docs/input-forms--docs). Click on `Show code` to explore practical usage examples of the hook.
 
-
 Sure! Your explanation and example are already clear, but it could be slightly improved for clarity, readability, and providing additional flexibility. Here's an improved version that is concise, polished, and includes a few additional tips.
 
 ---
@@ -235,21 +234,21 @@ To continuously improve or extend this library during development, the most effi
 Update your Vite configuration to conditionally alias the library path when using your local version:
 
 ```ts
-import path from "path";
-import { defineConfig } from "vite";
+import path from 'path';
+import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
   // Check if the USE_LOCAL_AJV environment variable is true
-  const useLocalAjv = process.env.USE_LOCAL_AJV === "true";
+  const useLocalAjv = process.env.USE_LOCAL_AJV === 'true';
 
   return {
     resolve: {
       alias: {
         // Use a local alias only when USE_LOCAL_AJV is enabled
         ...(useLocalAjv && {
-          "@programmer_network/use-ajv-form": path.resolve(
+          '@programmer_network/use-ajv-form': path.resolve(
             __dirname,
-            "../use-ajv-form/src"
+            '../use-ajv-form/src',
           ),
         }),
       },
@@ -260,6 +259,7 @@ export default defineConfig(() => {
 ```
 
 This configuration will:
+
 - Use the **published library** (from npm) by default.
 - Use the **local library's source code** (`../use-ajv-form/src`) only when `USE_LOCAL_AJV` is set to `true`.
 
@@ -284,6 +284,7 @@ Add a new script to your `package.json` to launch the dev server while referenci
 #### Step 3: Development Workflow
 
 - **Directory Setup**: Ensure your library (`../use-ajv-form/`) exists in the same flat-level directory as your main project.
+
   ```
   projects/
   ├── main-project/
@@ -291,6 +292,7 @@ Add a new script to your `package.json` to launch the dev server while referenci
   ```
 
 - **To Use the Local Library**: Start your dev server with:
+
   ```bash
   npm run dev:with-local-ajv
   ```
@@ -303,6 +305,7 @@ Add a new script to your `package.json` to launch the dev server while referenci
 ---
 
 #### Bonus: Cross-Platform Compatibility (Windows-Friendly)
+
 To ensure the `USE_LOCAL_AJV=true` works across all platforms (including Windows, where `export` syntax doesn’t work), install `cross-env`:
 
 ```bash
@@ -332,6 +335,6 @@ To deploy a new version and publish it to npm, follow these steps:
 3. Push the new tag to the remote Git repository.
 
 ```bash
-git tag vX.X.X 
+git tag vX.X.X
 git push origin vX.X.X
 ```

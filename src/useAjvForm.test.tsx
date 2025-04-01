@@ -598,15 +598,11 @@ describe('useAJVForm should properly set errors programmatically using setErrors
     };
 
     const { result } = renderHook(() =>
-      useAJVForm(
-        initialData,
-        schema,
-        {
-          userDefinedMessages: {
-            required: () => 'Monkey message',
-          },
+      useAJVForm(initialData, schema, {
+        userDefinedMessages: {
+          required: () => 'Monkey message',
         },
-      ),
+      }),
     );
 
     result.current.setErrors([
