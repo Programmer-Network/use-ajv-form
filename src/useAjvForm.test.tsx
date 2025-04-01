@@ -586,6 +586,44 @@ describe('useAJVForm should properly set errors programmatically using setErrors
     expect(result.current.state.description.error).toBe('Monkey message');
   });
 
+  it('sets the errors using form.setErrors without affecting other state', () => {
+    const initialData = { title: 'Foo', description: 'Bar' };
+    const schema: JSONSchemaType<{ title: string; description: string }> = {
+      type: 'object',
+      required: ['title', 'description'],
+      properties: {
+        title: { type: 'string' },
+        description: { type: 'string' },
+      },
+    };
+
+    const { result } = renderHook(() =>
+      useAJVForm(
+        initialData,
+        schema,
+        {
+          userDefinedMessages: {
+            required: () => 'Monkey message',
+          },
+        },
+      ),
+    );
+
+    result.current.setErrors([
+      {
+        instancePath: '/description',
+        keyword: 'required',
+        params: { missingProperty: 'description' },
+        schemaPath: '#/required',
+      },
+    ]);
+
+    expect(result.current.state.title.value).toBe('Foo');
+    expect(result.current.state.description.value).toBe('Bar');
+
+    expect(result.current.state.description.error).toBe('Monkey message');
+  });
+
   it('should handle conditional validations on locationType correctly', () => {
     /**
      * Test Scenario:
