@@ -181,6 +181,7 @@ const useAJVForm = <T extends Record<string, any>>(
     setState((prevState) =>
       Object.keys(newErrors).reduce((updatedState, fieldName) => {
         return {
+          ...prevState,
           ...updatedState,
           [fieldName]: {
             ...prevState[fieldName],
