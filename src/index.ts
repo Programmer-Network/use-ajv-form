@@ -198,10 +198,13 @@ const useAJVForm = <T extends Record<string, any>>(
     );
   }, [state]);
 
-  const isValid = useMemo(
-    () => Object.keys(state).every((key) => !state[key].error),
-    [state],
-  );
+  const isValid = useMemo(() => {
+    const data = Object.keys(state).reduce((acc, inputName) => {
+      acc[inputName as keyof T] = getValue(state[inputName].value) as T[keyof T];
+      return acc;
+    }, {} as T);
+    return AJVValidate(data);
+  }, [state]);
 
   useEffect(() => {
     if (!options?.errors || !options.errors.length) {
