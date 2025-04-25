@@ -90,5 +90,6 @@
     "json schema validation",
     "use-ajv-form",
     "react form validation"
-  ]
+  ],
+  "packageManager": "pnpm@9.15.2+sha1.0ffb02f94047016ec7e088030337455b4c94bb34"
 }

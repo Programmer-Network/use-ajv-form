@@ -9,17 +9,17 @@ importers:
     dependencies:
       ajv:
         specifier: '>= 8.13.0'
-        version: 8.13.0
+        version: 8.17.1
       ajv-errors:
         specifier: '>= 3.0.0'
-        version: 3.0.0(ajv@8.13.0)
+        version: 3.0.0(ajv@8.17.1)
       ajv-formats:
         specifier: '>= 2.1.1'
-        version: 3.0.1(ajv@8.13.0)
+        version: 3.0.1(ajv@8.17.1)
     devDependencies:
       '@programmer_network/ajv':
         specifier: 1.0.2
-        version: 1.0.2(ajv-errors@3.0.0(ajv@8.13.0))(ajv-formats@3.0.1(ajv@8.13.0))(ajv@8.13.0)
+        version: 1.0.2(ajv-errors@3.0.0(ajv@8.17.1))(ajv-formats@3.0.1(ajv@8.17.1))(ajv@8.17.1)
       '@testing-library/jest-dom':
         specifier: 6.1.4
         version: 6.1.4(@types/jest@29.5.10)(vitest@0.34.6(jsdom@22.1.0))
@@ -4366,11 +4366,11 @@ snapshots:
 
   '@pkgr/core@0.1.1': {}
 
-  '@programmer_network/ajv@1.0.2(ajv-errors@3.0.0(ajv@8.13.0))(ajv-formats@3.0.1(ajv@8.13.0))(ajv@8.13.0)':
+  '@programmer_network/ajv@1.0.2(ajv-errors@3.0.0(ajv@8.17.1))(ajv-formats@3.0.1(ajv@8.17.1))(ajv@8.17.1)':
     dependencies:
-      ajv: 8.13.0
-      ajv-errors: 3.0.0(ajv@8.13.0)
-      ajv-formats: 3.0.1(ajv@8.13.0)
+      ajv: 8.17.1
+      ajv-errors: 3.0.0(ajv@8.17.1)
+      ajv-formats: 3.0.1(ajv@8.17.1)
 
   '@rollup/pluginutils@5.1.3(rollup@4.28.1)':
     dependencies:
@@ -4820,13 +4820,17 @@ snapshots:
     optionalDependencies:
       ajv: 8.13.0
 
-  ajv-errors@3.0.0(ajv@8.13.0):
+  ajv-errors@3.0.0(ajv@8.17.1):
     dependencies:
-      ajv: 8.13.0
+      ajv: 8.17.1
 
   ajv-formats@3.0.1(ajv@8.13.0):
     optionalDependencies:
       ajv: 8.13.0
+
+  ajv-formats@3.0.1(ajv@8.17.1):
+    optionalDependencies:
+      ajv: 8.17.1
 
   ajv@6.12.6:
     dependencies:

@@ -969,7 +969,6 @@ describe('useAJVForm with error handling', () => {
     const { result } = renderHook(() => useAJVForm(initialData, schema, { errors }));
 
     expect(result.current.state.title.error).toBe('title is required.');
-    expect(result.current.isValid).toBe(false);
   });
 
   it('should update errors when options.errors changes', () => {
@@ -1003,7 +1002,25 @@ describe('useAJVForm with error handling', () => {
     expect(result.current.state.title.error).toBe(
       'Should be at least 3 characters long.',
     );
+  });
 
+  it('should validate the form correctly', () => {
+    const initialData = { title: '' };
+    const schema: JSONSchemaType<{ title: string }> = {
+      type: 'object',
+      required: ['title'],
+      properties: {
+        title: { type: 'string', minLength: 3 },
+      },
+    };
+
+    const { result } = renderHook(() => useAJVForm(initialData, schema));
     expect(result.current.isValid).toBe(false);
+
+    result.current.set({ title: 'Hi' });
+    expect(result.current.validate().isValid).toBe(false);
+
+    result.current.set({ title: 'Hello' });
+    expect(result.current.validate().isValid).toBe(true);
   });
 });
